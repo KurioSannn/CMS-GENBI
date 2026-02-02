@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Transition } from 'framer-motion'; // IMPORT Transition type
 import Link from 'next/link';
 import Image from 'next/image';
 import { genbiDivisions } from '@/data/members';
@@ -16,13 +16,13 @@ import 'swiper/css/free-mode';
 import 'swiper/css/pagination';
 
 const Struktur = () => {
-  // FIXED: Menggunakan tipe yang benar untuk transition
-  const smoothSpring = {
-    type: "spring" as const,  // FIX: 'as const' untuk literal type
+  // FIXED: Menggunakan tipe Transition dengan type assertion
+  const smoothSpring: Transition = {
+    type: "spring",
     stiffness: 40,
     damping: 12,
     mass: 0.8
-  };
+  } as const;
 
   const perspectiveStyle = { perspective: "2000px" };
   const backfaceStyle = { 
@@ -50,16 +50,16 @@ const Struktur = () => {
             <motion.div 
               initial={{ opacity: 0, x: -30 }} 
               whileInView={{ opacity: 1, x: 0 }} 
-              transition={smoothSpring} 
+              transition={smoothSpring}
               className="flex items-center gap-4 mb-6"
             >
               <div className="h-[1px] w-16 bg-gradient-to-r from-yellow-500 to-transparent" />
               <span className="text-yellow-500/80 font-bold text-[10px] uppercase tracking-[0.5em] italic">Departemen GenBI 2025/2026</span>
             </motion.div>
             <motion.h2 
-              initial={{ opacity: 0, y: 30 }} 
-              whileInView={{ opacity: 1, y: 0 }} 
-              transition={{ ...smoothSpring, delay: 0.1 }} 
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ ...smoothSpring, delay: 0.1 }}
               className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.9] italic"
             >
               Structure <br />
@@ -68,9 +68,9 @@ const Struktur = () => {
           </div>
 
           <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            whileInView={{ opacity: 1, y: 0 }} 
-            transition={{ ...smoothSpring, delay: 0.2 }} 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ ...smoothSpring, delay: 0.2 }}
             className="flex flex-col items-start lg:items-end gap-6"
           >
             <p className="text-slate-400 text-lg lg:text-right max-w-sm font-light leading-relaxed italic">Harmonisasi gerak dalam tujuh wadah departemen strategis.</p>
