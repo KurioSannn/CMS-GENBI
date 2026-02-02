@@ -27,7 +27,8 @@ const faqs = [
 ];
 
 const GenBIContactFAQ = () => {
-  const [openIndex, setOpenIndex] = useState(null);
+  // Beritahu TypeScript bahwa state ini bisa berisi number ATAU null
+const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const contactInfo = [
     { 
