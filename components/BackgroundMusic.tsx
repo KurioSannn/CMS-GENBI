@@ -10,32 +10,30 @@ const BackgroundMusic = () => {
   const [volume, setVolume] = useState(0.3);
   const [lastClickTime, setLastClickTime] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  
   const volumePanelRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
   const hasInteracted = useRef(false);
 
-  // Deteksi device mobile
+  // 1. Deteksi Device & Window Resize
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Inisialisasi audio
+  // 2. Inisialisasi Audio Engine
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    audioRef.current = new Audio('/mars-genbi.mp3');
-    audioRef.current.volume = volume;
-    audioRef.current.loop = true;
+    // Pastikan path sesuai dengan file di folder public kamu
+    const audio = new Audio('/mars-genbi.mp3'); 
+    audio.volume = volume;
+    audio.loop = true;
+    audioRef.current = audio;
 
-    const tryAutoPlay = () => {
+    const handleInteraction = () => {
       if (!hasInteracted.current && audioRef.current) {
         audioRef.current.play()
           .then(() => {
@@ -46,450 +44,160 @@ const BackgroundMusic = () => {
       }
     };
 
-    const timeout = setTimeout(tryAutoPlay, 1000);
-
-    const handleInteraction = () => {
-      if (!hasInteracted.current && audioRef.current) {
-        audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            hasInteracted.current = true;
-          })
-          .catch(console.error);
-      }
-    };
-
-    document.addEventListener('click', handleInteraction, { once: true });
+    // Trigger otomatis yang lebih agresif untuk Next.js
+    const events = ['click', 'touchstart', 'scroll', 'wheel'];
+    events.forEach(event => document.addEventListener(event, handleInteraction, { once: true }));
 
     return () => {
-      clearTimeout(timeout);
-      document.removeEventListener('click', handleInteraction);
+      events.forEach(event => document.removeEventListener(event, handleInteraction));
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current = null;
       }
     };
   }, []);
 
-  // Update volume realtime
+  // 3. Sinkronisasi Volume Real-time
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = volume;
+      audioRef.current.volume = isMuted ? 0 : volume;
       audioRef.current.muted = isMuted;
-      
-      if (volume === 0 && !isMuted) {
-        setIsMuted(true);
-      } else if (volume > 0 && isMuted) {
-        setIsMuted(false);
-      }
     }
   }, [volume, isMuted]);
 
-  // Click outside handler
+  // 4. Click Outside Handler (Close Panel)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (volumePanelRef.current && !volumePanelRef.current.contains(event.target as Node)) {
         setShowVolume(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Handle slider mouse events
-  useEffect(() => {
+  // 5. Logic Drag Slider yang Aman untuk TypeScript
+  const handleSliderMove = (e: React.MouseEvent | MouseEvent) => {
     if (!sliderRef.current) return;
+    const rect = sliderRef.current.getBoundingClientRect();
+    const clientX = 'clientX' in e ? e.clientX : (e as any).touches[0].clientX;
+    const clickX = clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+    const newVolume = percentage / 100;
+    
+    setVolume(newVolume);
+    if (newVolume > 0 && isMuted) setIsMuted(false);
+    if (newVolume > 0 && !isPlaying && audioRef.current) {
+      audioRef.current.play().then(() => setIsPlaying(true));
+    }
+  };
 
-    const slider = sliderRef.current;
+  const toggleMute = () => {
+    if (!audioRef.current) return;
+    const nextMuted = !isMuted;
+    setIsMuted(nextMuted);
+    if (!nextMuted) audioRef.current.play().then(() => setIsPlaying(true));
+  };
 
-    const handleMouseDown = (e: MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        const rect = slider.getBoundingClientRect();
-        const clickX = moveEvent.clientX - rect.left;
-        const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
-        const newVolume = percentage / 100;
-        setVolume(newVolume);
-        
-        if (newVolume > 0 && !isPlaying && audioRef.current) {
-          audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
-        }
-      };
-
-      const handleMouseUp = () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      
-      const rect = slider.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
-      const newVolume = percentage / 100;
-      setVolume(newVolume);
-      
-      if (newVolume > 0 && !isPlaying && audioRef.current) {
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
-      }
-    };
-
-    slider.addEventListener('mousedown', handleMouseDown);
-
-    return () => {
-      slider.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, [isPlaying]);
-
-  // Handle double click untuk mute
   const handleButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    const currentTime = new Date().getTime();
-    const timeDiff = currentTime - lastClickTime;
-    
-    if (timeDiff < 300 && timeDiff > 0) {
-      // Double click terdeteksi - toggle mute
-      if (!audioRef.current) return;
-      
-      const newMutedState = !isMuted;
-      setIsMuted(newMutedState);
-      
-      if (!newMutedState && !isPlaying) {
-        audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
-      }
-      
-      setShowVolume(true);
+    const currentTime = Date.now();
+    if (currentTime - lastClickTime < 300) {
+      toggleMute();
       setLastClickTime(0);
     } else {
-      // Single click - toggle panel volume
-      setShowVolume(prev => !prev);
+      setShowVolume(!showVolume);
       setLastClickTime(currentTime);
     }
   };
 
-  const handleVolumeClick = (percentage: number) => {
-    const newVolume = percentage / 100;
-    setVolume(newVolume);
-    
-    if (newVolume > 0 && !isPlaying && audioRef.current) {
-      audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
-    }
-    
-    setShowVolume(true);
-  };
-
-  const getVolumeIcon = () => {
-    if (isMuted || volume === 0) {
-      return <VolumeX className="w-5 h-5 text-white" />;
-    } else if (volume < 0.5) {
-      return <Volume1 className="w-5 h-5 text-white" />;
-    } else {
-      return <Volume2 className="w-5 h-5 text-white" />;
-    }
-  };
-
-  const getVolumeLabel = () => {
-    if (isMuted || volume === 0) return 'Off';
-    if (volume < 0.3) return 'Low';
-    if (volume < 0.7) return 'Medium';
-    return 'High';
-  };
-
-  const getVolumeColor = () => {
-    if (isMuted || volume === 0) return 'text-gray-400';
-    if (volume < 0.3) return 'text-yellow-400';
-    if (volume < 0.7) return 'text-yellow-500';
-    return 'text-orange-500';
-  };
-
   return (
-    <>
-      {/* Mobile Indicator (only shown on mobile) */}
-      {isMobile && (
-        <div className="fixed top-4 right-4 z-40 md:hidden">
-          <div className="flex items-center gap-2 bg-navy-800/90 backdrop-blur-sm border border-navy-600 rounded-full px-3 py-1.5 shadow-lg">
-            <Smartphone className="w-4 h-4 text-yellow-400" />
-            <span className="text-xs text-white">Sound Control</span>
+    <div className="fixed bottom-6 right-6 z-[9999]">
+      {/* Volume Panel */}
+      <div
+        ref={volumePanelRef}
+        className={`absolute bottom-full right-0 mb-4 w-56 transition-all duration-300 transform ${
+          showVolume ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95 pointer-events-none'
+        }`}
+      >
+        <div className="bg-[#0B1F40]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">
+              {isMobile ? 'Mobile Audio' : 'Master Control'}
+            </span>
+            <span className={`text-xs font-bold ${isMuted ? 'text-red-400' : 'text-yellow-400'}`}>
+              {Math.round(volume * 100)}%
+            </span>
           </div>
-        </div>
-      )}
 
-      {/* Volume Control */}
-      <div className="fixed bottom-6 right-6 z-50">
-        {/* Volume Control Panel */}
-        <div
-          ref={volumePanelRef}
-          className={`absolute ${
-            isMobile 
-              ? 'bottom-full right-0 mb-3 w-48' 
-              : 'bottom-full right-0 mb-3 w-52'
-          } transition-all duration-200 ${
-            showVolume
-              ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
-              : 'opacity-0 scale-95 translate-y-2 pointer-events-none'
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className={`bg-gradient-to-b from-navy-900 to-navy-800 border-2 border-navy-700 rounded-xl shadow-2xl p-4 ${
-            isMobile ? 'p-3' : 'p-5'
-          }`}>
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="text-sm font-bold text-white">
-                {isMobile ? '🔊' : 'VOLUME CONTROL'}
-              </div>
-              <div className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                isMuted 
-                  ? 'bg-navy-700 text-gray-300' 
-                  : 'bg-yellow-500 text-navy-900'
-              }`}>
-                {getVolumeLabel()}
-              </div>
-            </div>
-
-            {/* Current Volume Display */}
-            <div className="text-center mb-4">
-              <div className={`font-bold ${isMobile ? 'text-2xl' : 'text-3xl'} ${getVolumeColor()}`}>
-                {Math.round(volume * 100)}%
-              </div>
-              <div className="text-xs text-gray-300 mt-1">
-                {isMuted ? '🔇 MUTED' : '🔊 ACTIVE'}
-              </div>
-            </div>
-
-            {/* Slider Container */}
-            <div className="space-y-3 mb-4">
-              {/* Slider Track */}
-              <div 
-                ref={sliderRef}
-                className="relative h-3 bg-navy-700 rounded-full cursor-pointer border border-navy-600"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  const clickX = e.clientX - rect.left;
-                  const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
-                  const newVolume = percentage / 100;
-                  setVolume(newVolume);
-                  
-                  if (newVolume > 0 && !isPlaying && audioRef.current) {
-                    audioRef.current.play().then(() => setIsPlaying(true)).catch(console.error);
-                  }
-                }}
-              >
-                {/* Filled Portion with Gradient */}
-                <div
-                  className="absolute top-0 left-0 h-full rounded-full bg-gradient-to-r from-yellow-400 via-yellow-500 to-orange-500 transition-all duration-150"
-                  style={{ width: `${isMuted ? 0 : volume * 100}%` }}
-                />
-                
-                {/* Thumb */}
-                <div
-                  className="absolute top-1/2 w-5 h-5 bg-white border-2 border-yellow-400 rounded-full shadow-lg -translate-y-1/2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
-                  style={{
-                    left: `${isMuted ? 0 : volume * 100}%`,
-                    transform: 'translate(-50%, -50%)',
-                    boxShadow: '0 2px 8px rgba(251, 191, 36, 0.5)'
-                  }}
-                />
-              </div>
-
-              {/* Volume Levels */}
-              <div className="flex justify-between text-xs text-gray-300 font-medium px-1">
-                <span>0%</span>
-                <span>50%</span>
-                <span>100%</span>
-              </div>
-            </div>
-
-            {/* Quick Presets - Mobile: smaller buttons, Desktop: normal */}
-            <div className={`grid grid-cols-5 gap-1 ${isMobile ? 'mb-3' : 'mb-4'}`}>
-              {[0, 25, 50, 75, 100].map((percentage) => {
-                const isActive = Math.abs((volume * 100) - percentage) < 5;
-                let bgColor = '';
-                let textColor = 'text-white';
-                
-                if (isActive) {
-                  if (percentage === 0) bgColor = 'bg-navy-600 text-white';
-                  else if (percentage <= 25) bgColor = 'bg-yellow-400 text-navy-900';
-                  else if (percentage <= 50) bgColor = 'bg-yellow-500 text-navy-900';
-                  else if (percentage <= 75) bgColor = 'bg-orange-400 text-navy-900';
-                  else bgColor = 'bg-orange-500 text-white';
-                } else {
-                  bgColor = 'bg-navy-700 hover:bg-navy-600 text-gray-300';
-                }
-                
-                return (
-                  <button
-                    key={percentage}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleVolumeClick(percentage);
-                    }}
-                    className={`py-2 text-xs font-medium rounded-lg transition-all duration-150 ${bgColor} ${textColor} ${
-                      isMobile ? 'px-1' : 'px-2'
-                    }`}
-                  >
-                    {percentage}%
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Mobile Info */}
-            {isMobile && (
-              <div className="border-t border-navy-700 pt-3">
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                  <div className="flex items-center gap-1">
-                    <span className="text-yellow-300">💡</span>
-                    <span>Double tap to mute</span>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Arrow Pointer */}
-          <div className="absolute -bottom-2 right-4 w-4 h-4 bg-navy-900 border-r-2 border-b-2 border-navy-700 rotate-45" />
-        </div>
-
-        {/* Main Button - Responsive sizing */}
-        <div className="relative">
-          <button
-            ref={buttonRef}
-            onClick={handleButtonClick}
-            onMouseEnter={() => !isMobile && setShowVolume(true)}
-            onMouseLeave={() => {
-              if (!showVolume && !isMobile) {
-                setTimeout(() => setShowVolume(false), 300);
-              }
-            }}
-            onTouchStart={() => isMobile && setShowVolume(true)}
-            onTouchEnd={() => {
-              if (isMobile) {
-                setTimeout(() => setShowVolume(false), 3000);
-              }
-            }}
-            className={`group relative ${
-              isMobile 
-                ? 'p-3 border-2' 
-                : 'p-3.5 border-2'
-            } bg-gradient-to-br from-navy-800 to-navy-900 border-navy-600 rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200`}
+          {/* Slider Track */}
+          <div 
+            ref={sliderRef}
+            className="relative h-2 bg-white/10 rounded-full cursor-pointer mb-6"
+            onClick={(e) => handleSliderMove(e as unknown as MouseEvent)}
           >
-            {/* Navy Background Effect */}
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-navy-700 to-navy-800 opacity-0 group-hover:opacity-100 transition-opacity" />
-            
-            {/* Active Effect */}
-            {!isMuted && volume > 0 && (
-              <div className="absolute -inset-1 rounded-xl bg-gradient-to-r from-yellow-500/10 to-orange-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            )}
-            
-            {/* Icon Container */}
-            <div className="relative flex items-center justify-center">
-              {/* Icon - Mobile: with indicator, Desktop: clean */}
-              <div className="text-white transition-colors duration-200">
-                {getVolumeIcon()}
-              </div>
-              
-              {/* Sound Waves Animation - Only show on desktop */}
-              {!isMobile && !isMuted && volume > 0 && isPlaying && (
-                <div className="absolute -right-2 -top-2 flex gap-0.5">
-                  {[0.4, 0.7, 1, 0.7, 0.4].map((scale, i) => (
-                    <div
-                      key={i}
-                      className="w-0.5 bg-gradient-to-t from-yellow-300 to-yellow-200 rounded-full"
-                      style={{
-                        height: `${scale * 10}px`,
-                        animation: 'wave 1.2s ease-in-out infinite',
-                        animationDelay: `${i * 0.1}s`
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-              
-              {/* Mobile Playing Indicator */}
-              {isMobile && isPlaying && !isMuted && (
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              )}
-            </div>
-            
-            {/* Status Dot */}
-            <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 ${
-              isMobile ? 'border-navy-800' : 'border-navy-900'
-            } ${
-              isMuted 
-                ? 'bg-gray-500' 
-                : isPlaying 
-                  ? 'bg-yellow-500 animate-pulse' 
-                  : 'bg-orange-500'
-            }`} />
-            
-            {/* Double Click Indicator - Only on desktop */}
-            {!isMobile && (
-              <div className="absolute -top-1 -left-1 w-2 h-2 bg-yellow-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="absolute inset-0 bg-yellow-400 rounded-full animate-ping opacity-30"></div>
-              </div>
-            )}
-          </button>
-          
-          {/* Tooltip - Only on desktop */}
-          {!isMobile && (
-            <div className="absolute -top-11 right-1/2 translate-x-1/2 bg-navy-800 border border-navy-600 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap min-w-[160px] text-center">
-              <div className="flex flex-col items-center gap-1">
-                <div className="flex items-center gap-2">
-                  <span className={`font-medium ${isMuted ? 'text-gray-300' : 'text-yellow-300'}`}>
-                    {isMuted ? '🔇 MUTED' : '🔊 PLAYING'}
-                  </span>
-                  <span className="text-yellow-300 font-bold">
-                    {Math.round(volume * 100)}%
-                  </span>
-                </div>
-                <div className="text-[10px] text-gray-400 mt-1">
-                  Click: Show Panel • Double Click: Toggle Mute
-                </div>
-              </div>
-              <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-navy-800 border-b border-r border-navy-600 rotate-45"></div>
-            </div>
-          )}
-          
-          {/* Mobile Touch Indicator */}
-          {isMobile && showVolume && (
-            <div className="absolute -top-10 right-1/2 translate-x-1/2 bg-navy-800 text-white text-xs px-2 py-1 rounded opacity-80">
-              👆 Tap to close
-            </div>
-          )}
+            <div 
+              className="absolute top-0 left-0 h-full bg-yellow-500 rounded-full transition-all duration-150"
+              style={{ width: `${isMuted ? 0 : volume * 100}%` }}
+            />
+            <div 
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-yellow-500 rounded-full shadow-lg"
+              style={{ left: `${isMuted ? 0 : volume * 100}%`, transform: 'translate(-50%, -50%)' }}
+            />
+          </div>
+
+          {/* Quick Presets */}
+          <div className="grid grid-cols-4 gap-2">
+            {[0, 25, 50, 100].map((p) => (
+              <button
+                key={p}
+                onClick={() => setVolume(p / 100)}
+                className="py-1.5 text-[10px] font-bold rounded-lg bg-white/5 text-white/60 hover:bg-yellow-500 hover:text-[#0B1F40] transition-all"
+              >
+                {p}%
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* CSS Animations */}
-      <style jsx>{`
-        @keyframes wave {
-          0%, 100% { 
-            transform: scaleY(1); 
-            opacity: 0.6; 
-          }
-          50% { 
-            transform: scaleY(1.5); 
-            opacity: 1; 
-          }
-        }
-        
-        /* Mobile touch optimization */
-        @media (max-width: 768px) {
-          button {
-            -webkit-tap-highlight-color: rgba(0,0,0,0);
-          }
+      {/* Main Trigger Button */}
+      <button
+        onClick={handleButtonClick}
+        className={`group relative p-4 rounded-2xl border transition-all duration-500 ${
+          isMuted ? 'bg-red-500/10 border-red-500/50' : 'bg-[#0B1F40]/90 border-white/20 hover:border-yellow-500/50'
+        } shadow-2xl active:scale-90`}
+      >
+        <div className="relative z-10 flex items-center gap-3">
+          {isMuted || volume === 0 ? <VolumeX className="text-red-400" /> : volume < 0.5 ? <Volume1 className="text-yellow-400" /> : <Volume2 className="text-yellow-400" />}
           
-          button:active {
-            transform: scale(0.95);
-          }
-        }
-      `}</style>
-    </>
+          {/* Visualizer bars (Desktop Only) */}
+          {!isMobile && !isMuted && isPlaying && (
+            <div className="flex items-end gap-1 h-4">
+              {[0.4, 1, 0.6].map((h, i) => (
+                <div 
+                  key={i} 
+                  className="w-1 bg-yellow-500 rounded-full animate-bounce" 
+                  style={{ height: `${h * 100}%`, animationDuration: '0.6s', animationDelay: `${i * 0.1}s` }} 
+                />
+              ))}
+            </div>
+          )}
+        </div>
+        
+        {/* Status Indicator Dot */}
+        <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#050B18] ${
+          isMuted ? 'bg-red-500' : isPlaying ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
+        }`} />
+      </button>
+
+      {/* Tooltip Info */}
+      <div className="absolute bottom-full right-0 mb-20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+         <div className="bg-black/80 text-white text-[10px] px-3 py-1 rounded-full whitespace-nowrap">
+            Double Click to Mute
+         </div>
+      </div>
+    </div>
   );
 };
 
