@@ -16,8 +16,9 @@ import 'swiper/css/free-mode';
 import 'swiper/css/pagination';
 
 const Struktur = () => {
+  // FIXED: Menggunakan tipe yang benar untuk transition
   const smoothSpring = {
-    type: "spring",
+    type: "spring" as const,  // FIX: 'as const' untuk literal type
     stiffness: 40,
     damping: 12,
     mass: 0.8
@@ -25,8 +26,8 @@ const Struktur = () => {
 
   const perspectiveStyle = { perspective: "2000px" };
   const backfaceStyle = { 
-    backfaceVisibility: "hidden" as "hidden",
-    WebkitBackfaceVisibility: "hidden" as "hidden",
+    backfaceVisibility: "hidden" as const,
+    WebkitBackfaceVisibility: "hidden" as const,
   };
 
   return (
@@ -46,17 +47,32 @@ const Struktur = () => {
         {/* 2. HEADER */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-24 gap-10 px-6">
           <div className="max-w-3xl text-left">
-            <motion.div initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={smoothSpring} className="flex items-center gap-4 mb-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }} 
+              whileInView={{ opacity: 1, x: 0 }} 
+              transition={smoothSpring} 
+              className="flex items-center gap-4 mb-6"
+            >
               <div className="h-[1px] w-16 bg-gradient-to-r from-yellow-500 to-transparent" />
               <span className="text-yellow-500/80 font-bold text-[10px] uppercase tracking-[0.5em] italic">Departemen GenBI 2025/2026</span>
             </motion.div>
-            <motion.h2 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ ...smoothSpring, delay: 0.1 }} className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.9] italic">
+            <motion.h2 
+              initial={{ opacity: 0, y: 30 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              transition={{ ...smoothSpring, delay: 0.1 }} 
+              className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.9] italic"
+            >
               Structure <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-500 to-amber-600">Of Excellence.</span>
             </motion.h2>
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} transition={{ ...smoothSpring, delay: 0.2 }} className="flex flex-col items-start lg:items-end gap-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            whileInView={{ opacity: 1, y: 0 }} 
+            transition={{ ...smoothSpring, delay: 0.2 }} 
+            className="flex flex-col items-start lg:items-end gap-6"
+          >
             <p className="text-slate-400 text-lg lg:text-right max-w-sm font-light leading-relaxed italic">Harmonisasi gerak dalam tujuh wadah departemen strategis.</p>
             <div className="flex items-center gap-4 text-white/20">
               <span className="text-[10px] font-black tracking-widest uppercase italic">Scroll to explore</span>
@@ -74,7 +90,11 @@ const Struktur = () => {
             mousewheel={{ forceToAxis: true }}
             spaceBetween={30}
             slidesPerView={1.15}
-            breakpoints={{ 640: { slidesPerView: 2.3 }, 1024: { slidesPerView: 3.3 }, 1280: { slidesPerView: 4.3 } }}
+            breakpoints={{ 
+              640: { slidesPerView: 2.3 }, 
+              1024: { slidesPerView: 3.3 }, 
+              1280: { slidesPerView: 4.3 } 
+            }}
             pagination={{ clickable: true, dynamicBullets: true }}
             className="!pb-32 !pt-10 overflow-visible"
           >
@@ -90,10 +110,24 @@ const Struktur = () => {
                 >
                   
                   {/* FRONT SIDE (LOGO BI) */}
-                  <div className="absolute inset-0 w-full h-full bg-[#0F172A] border border-white/10 rounded-[3rem] p-10 flex flex-col shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30" style={{ ...backfaceStyle, transformStyle: "preserve-3d" }}>
+                  <div 
+                    className="absolute inset-0 w-full h-full bg-[#0F172A] border border-white/10 rounded-[3rem] p-10 flex flex-col shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30" 
+                    style={{ 
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      transformStyle: "preserve-3d" 
+                    }}
+                  >
                     <div className="flex justify-between items-start mb-16">
                       <div className="w-14 h-14 bg-gradient-to-tr from-yellow-500 to-amber-700 rounded-2xl flex items-center justify-center p-2">
-                        <Image src="/BI.png" alt="Logo BI" width={40} height={40} className="object-contain" />
+                        <Image 
+                          src="/BI.png" 
+                          alt="Logo BI" 
+                          width={40} 
+                          height={40} 
+                          className="object-contain" 
+                          priority
+                        />
                       </div>
                       <Sparkles size={20} className="text-yellow-500/20" />
                     </div>
@@ -105,7 +139,15 @@ const Struktur = () => {
                   </div>
 
                   {/* BACK SIDE (LOGO DIVISI OVAL PUTIH SEMPURNA) */}
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#0B1F40] to-[#030712] border border-yellow-500/40 rounded-[3rem] flex flex-col items-center justify-center p-12 text-center shadow-2xl" style={{ transform: "rotateY(180deg)", ...backfaceStyle, transformStyle: "preserve-3d" }}>
+                  <div 
+                    className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#0B1F40] to-[#030712] border border-yellow-500/40 rounded-[3rem] flex flex-col items-center justify-center p-12 text-center shadow-2xl" 
+                    style={{ 
+                      transform: "rotateY(180deg)",
+                      backfaceVisibility: "hidden",
+                      WebkitBackfaceVisibility: "hidden",
+                      transformStyle: "preserve-3d" 
+                    }}
+                  >
                     
                     {/* Lingkaran Oval Putih Lebih Besar */}
                     <div className="w-32 h-32 bg-white rounded-[3rem] flex items-center justify-center p-6 mb-10 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden relative border-4 border-white/20">
@@ -114,6 +156,7 @@ const Struktur = () => {
                         alt={`${division.name} logo`} 
                         fill 
                         className="p-6 object-contain" 
+                        sizes="128px"
                         priority
                       />
                     </div>
@@ -123,7 +166,11 @@ const Struktur = () => {
                       <p className="text-yellow-500/60 text-[10px] font-bold uppercase tracking-[0.3em] italic text-center">Pimpin, Inspirasi, Berikan Dampak!</p>
                     </div>
                     
-                    <Link href={`/divisi/${division.slug}`} prefetch={true} className="group/btn relative px-8 py-4 w-full overflow-hidden rounded-2xl bg-[#EAB308] transition-all duration-300">
+                    <Link 
+                      href={`/divisi/${division.slug}`} 
+                      prefetch={true} 
+                      className="group/btn relative px-8 py-4 w-full overflow-hidden rounded-2xl bg-[#EAB308] transition-all duration-300"
+                    >
                       <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
                       <span className="relative z-10 text-[#0B1F40] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 italic">
                         Eksplorasi <ChevronRight size={14} />
@@ -138,8 +185,18 @@ const Struktur = () => {
       </div>
 
       <style jsx global>{`
-        .swiper-pagination-bullet { background-color: rgba(255, 255, 255, 0.05) !important; width: 6px; height: 6px; transition: all 0.6s; }
-        .swiper-pagination-bullet-active { background-color: #EAB308 !important; width: 40px; border-radius: 20px; box-shadow: 0 0 20px rgba(234, 179, 8, 0.3); }
+        .swiper-pagination-bullet { 
+          background-color: rgba(255, 255, 255, 0.05) !important; 
+          width: 6px; 
+          height: 6px; 
+          transition: all 0.6s; 
+        }
+        .swiper-pagination-bullet-active { 
+          background-color: #EAB308 !important; 
+          width: 40px; 
+          border-radius: 20px; 
+          box-shadow: 0 0 20px rgba(234, 179, 8, 0.3); 
+        }
       `}</style>
     </section>
   );
