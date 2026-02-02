@@ -27,8 +27,8 @@ const faqs = [
 ];
 
 const GenBIContactFAQ = () => {
-  // Beritahu TypeScript bahwa state ini bisa berisi number ATAU null
-const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // FIX: Menggunakan Generic Type agar TypeScript mengizinkan number dan null
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const contactInfo = [
     { 
@@ -54,6 +54,7 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
   return (
     <section id="contact-faq" className="py-24 bg-white relative z-10 overflow-visible">
       <div className="container mx-auto px-6 max-w-[1400px]">
+        {/* Responsive: Kolom Teks & Peta di atas pada HP, Kolom FAQ di bawah */}
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-16 items-start">
           
           {/* --- BAGIAN KIRI: HUBUNGI KAMI & PETA --- */}
@@ -94,7 +95,7 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
               ))}
             </div>
 
-            {/* Section Peta Sesuai Foto Referensi */}
+            {/* Section Peta */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-[#0B1F47] justify-center lg:justify-start">
                 <div className="p-2 bg-[#EAB308] rounded-lg shadow-sm">
@@ -102,23 +103,25 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
                 </div>
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest text-slate-400">Lokasi Kami</p>
-                  <p className="font-bold">Veteran UPN Jawa Timur</p>
+                  <p className="font-bold">UPN "Veteran" Jawa Timur</p>
                 </div>
               </div>
               
               <div className="w-full h-[350px] rounded-[2.5rem] overflow-hidden border-4 border-slate-50 shadow-2xl relative group">
+                {/* Embed Google Maps Asli */}
                 <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.2731871261!2d112.7865292!3d-7.3323067!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fac2f602737d%3A0x673946001087e596!2sUniversitas%20Pembangunan%20Nasional%20%22Veteran%22%20Jawa%20Timur!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid" 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.271168128456!2d112.78748367451675!3d-7.312111571891917!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fac26955077d%3A0x6b043c79c884b23d!2sUniversitas%20Pembangunan%20Nasional%20%22Veteran%22%20Jawa%20Timur!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid"
                   width="100%" 
                   height="100%" 
                   style={{ border: 0 }} 
                   allowFullScreen={true} 
                   loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
                   className="transition-all duration-700"
                 ></iframe>
-                {/* Tombol Buka di Peta posisi Kanan Bawah */}
+                
                 <a 
-                  href="https://goo.gl/maps/upnvjatim" 
+                  href="https://maps.app.goo.gl/Fv8FmBv6u9Y8m8xQ8" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="absolute bottom-6 right-6 bg-[#0B1F47] text-white px-6 py-3 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2 hover:bg-[#EAB308] hover:text-[#0B1F47] transition-all z-30"
@@ -138,13 +141,9 @@ const [openIndex, setOpenIndex] = useState<number | null>(null);
             className="w-full bg-[#0B1F47] rounded-[3.5rem] p-8 md:p-12 shadow-2xl relative overflow-visible"
           >
             <div className="relative z-10 overflow-visible">
-              {/* Heading FAQ Sesuai Foto Referensi */}
               <h3 className="text-4xl font-black uppercase tracking-tighter mb-10 flex items-center gap-4 italic leading-tight overflow-visible py-4">
                 <span className="w-12 h-[3px] bg-[#EAB308] shrink-0"></span>
-                <span 
-                  className="bg-gradient-to-r from-white via-slate-200 to-white bg-clip-text text-transparent"
-                  style={{ paddingRight: '0.4em', marginRight: '-0.4em' }}
-                >
+                <span className="bg-gradient-to-r from-white via-slate-200 to-white bg-clip-text text-transparent">
                   FAQ
                 </span>
               </h3>
