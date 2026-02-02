@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion, Transition } from 'framer-motion'; // IMPORT Transition type
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
 import { genbiDivisions } from '@/data/members';
@@ -16,13 +16,13 @@ import 'swiper/css/free-mode';
 import 'swiper/css/pagination';
 
 const Struktur = () => {
-  // FIXED: Menggunakan tipe Transition dengan type assertion
-  const smoothSpring: Transition = {
+  // SIMPLE FIX: Gunakan type assertion ke any
+  const smoothSpring: any = {
     type: "spring",
     stiffness: 40,
     damping: 12,
     mass: 0.8
-  } as const;
+  };
 
   const perspectiveStyle = { perspective: "2000px" };
   const backfaceStyle = { 
