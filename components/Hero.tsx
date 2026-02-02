@@ -65,14 +65,13 @@ const Hero = () => {
                   style={{ objectFit: 'cover' }}
                   priority={index === 0}
                   className="brightness-[0.85]"
+                  sizes="100vw"
                 />
               </div>
 
               {/* 2. LAYER GRADIENT OVERLAY */}
               <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F40] via-[#0B1F40]/50 to-transparent opacity-90"></div>
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F40] via-transparent to-transparent opacity-80"></div>
-
-              {/* Note: Layer Batik Parang telah dihapus dari sini */}
 
               {/* 3. KONTEN TEKS */}
               <div className="absolute inset-0 flex items-center">

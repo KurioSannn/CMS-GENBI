@@ -27,7 +27,6 @@ const faqs = [
 ];
 
 const GenBIContactFAQ = () => {
-  // FIXED: Menggunakan tipe number | null untuk state
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const contactInfo = [
@@ -54,10 +53,9 @@ const GenBIContactFAQ = () => {
   return (
     <section id="contact-faq" className="py-24 bg-white relative z-10 overflow-visible">
       <div className="container mx-auto px-6 max-w-[1400px]">
-        {/* Responsive: Konten teks & peta di atas pada HP, Accordion di bawah */}
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-16 items-start">
           
-          {/* --- BAGIAN KIRI: HUBUNGI KAMI & PETA --- */}
+          {/* BAGIAN KIRI */}
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -75,7 +73,6 @@ const GenBIContactFAQ = () => {
               </h2>
             </div>
 
-            {/* Tombol Kontak */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {contactInfo.map((item, idx) => (
                 <motion.a 
@@ -95,7 +92,6 @@ const GenBIContactFAQ = () => {
               ))}
             </div>
 
-            {/* Section Peta */}
             <div className="space-y-4">
               <div className="flex items-center gap-3 text-[#0B1F47] justify-center lg:justify-start">
                 <div className="p-2 bg-[#EAB308] rounded-lg shadow-sm">
@@ -132,7 +128,7 @@ const GenBIContactFAQ = () => {
             </div>
           </motion.div>
 
-          {/* --- BAGIAN KANAN: FAQ ACCORDION --- */}
+          {/* BAGIAN KANAN */}
           <motion.div 
             initial={{ opacity: 0, x: 50 }}
             whileInView={{ opacity: 1, x: 0 }}

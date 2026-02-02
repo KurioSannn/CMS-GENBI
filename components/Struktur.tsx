@@ -11,14 +11,15 @@ import { Sparkles, ChevronRight, MoveRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Mousewheel, Pagination, A11y } from 'swiper/modules';
 
+// Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/free-mode';
 import 'swiper/css/pagination';
 
 const Struktur = () => {
-  // SIMPLE FIX: Gunakan type assertion ke any
-  const smoothSpring: any = {
-    type: "spring",
+  // FIX: Menggunakan type assertion yang benar
+  const smoothSpring = {
+    type: "spring" as const,
     stiffness: 40,
     damping: 12,
     mass: 0.8
