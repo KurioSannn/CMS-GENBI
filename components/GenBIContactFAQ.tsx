@@ -27,7 +27,7 @@ const faqs = [
 ];
 
 const GenBIContactFAQ = () => {
-  // FIX: Menggunakan Generic Type <number | null> agar TypeScript mengizinkan angka dan null
+  // FIXED: Menggunakan tipe number | null untuk state
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const contactInfo = [
@@ -117,6 +117,7 @@ const GenBIContactFAQ = () => {
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   className="transition-all duration-700"
+                  title="Peta Lokasi UPN Veteran Jawa Timur"
                 ></iframe>
                 
                 <a 
@@ -157,7 +158,7 @@ const GenBIContactFAQ = () => {
                   >
                     <button
                       onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                      className="w-full flex items-center justify-between p-6 md:p-7 text-left outline-none"
+                      className="w-full flex items-center justify-between p-6 md:p-7 text-left outline-none focus:outline-none focus:ring-2 focus:ring-[#EAB308]/50"
                     >
                       <span className={`font-bold tracking-tight transition-colors pr-4 text-base md:text-lg ${
                         openIndex === index ? "text-[#EAB308]" : "text-white"
@@ -166,7 +167,7 @@ const GenBIContactFAQ = () => {
                       </span>
                       <motion.div
                         animate={{ rotate: openIndex === index ? 180 : 0 }}
-                        className={`shrink-0 ${openIndex === index ? "text-[#EAB308]" : "text-white/30"}`}
+                        className={`shrink-0 transition-colors ${openIndex === index ? "text-[#EAB308]" : "text-white/30"}`}
                       >
                         <ChevronDown size={20} />
                       </motion.div>
