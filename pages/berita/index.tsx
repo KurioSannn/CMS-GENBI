@@ -13,7 +13,6 @@ export default function BeritaPage() {
       </Head>
       <Navbar isScrolled={true} />
       <main className="pt-20"> 
-        {/* Kita panggil lagi komponennya di sini sebagai konten utama halaman berita */}
         <GenBINews />
         <GenBIJoinCTA />
       </main>
