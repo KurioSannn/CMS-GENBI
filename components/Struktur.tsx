@@ -16,15 +16,12 @@ import 'swiper/css';
 import 'swiper/css/free-mode';
 import 'swiper/css/pagination';
 
-const Struktur = () => {
-  // FIX: Menggunakan type assertion yang benar
-  const smoothSpring = {
-    type: "spring" as const,
-    stiffness: 40,
-    damping: 12,
-    mass: 0.8
-  };
-
+const smoothSpring = {
+  type: "spring" as const, // Tambahkan 'as const' di sini
+  stiffness: 40,
+  damping: 12,
+  mass: 0.8
+};
   const perspectiveStyle = { perspective: "2000px" };
   const backfaceStyle = { 
     backfaceVisibility: "hidden" as const,
