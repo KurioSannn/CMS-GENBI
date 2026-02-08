@@ -64,7 +64,7 @@ export const genbiDivisions: Division[] = [
 {
   name: "Hubungan Eksternal",
   slug: "hubeks",
-  logo: "/Hubeks.png",
+  logo: "/HUBEKS.png",
   description: "Membangun relasi strategis dan memperluas jaringan kolaborasi GenBI UPNVJT.",
   members: [
     { name: "Rikza Hakal Siraji", position: "Kepala Divisi", prodiAngkatan: "Informatika '22", imageGif: "/members/mas rikza.gif" },
