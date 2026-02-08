@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Transition } from 'framer-motion'; // <-- TAMBAHKAN Transition di import
 import Link from 'next/link';
 import Image from 'next/image';
 import { genbiDivisions } from '@/data/members';
@@ -18,9 +18,9 @@ import 'swiper/css/pagination';
 
 // PASTIKAN BARIS INI ADA:
 const Struktur = () => {
-  // FIX: Tipe data harus dikunci dengan 'as const' agar Vercel tidak error
-  const smoothSpring = {
-    type: "spring" as const,
+  // FIX: Gunakan tipe Transition dari framer-motion
+  const smoothSpring: Transition = {
+    type: "spring",
     stiffness: 40,
     damping: 12,
     mass: 0.8
