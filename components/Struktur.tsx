@@ -16,12 +16,16 @@ import 'swiper/css';
 import 'swiper/css/free-mode';
 import 'swiper/css/pagination';
 
-const smoothSpring = {
-  type: "spring" as const, // Tambahkan 'as const' di sini
-  stiffness: 40,
-  damping: 12,
-  mass: 0.8
-};
+// PASTIKAN BARIS INI ADA:
+const Struktur = () => {
+  // FIX: Tipe data harus dikunci dengan 'as const' agar Vercel tidak error
+  const smoothSpring = {
+    type: "spring" as const,
+    stiffness: 40,
+    damping: 12,
+    mass: 0.8
+  };
+
   const perspectiveStyle = { perspective: "2000px" };
   const backfaceStyle = { 
     backfaceVisibility: "hidden" as const,
@@ -124,7 +128,6 @@ const smoothSpring = {
                           width={40} 
                           height={40} 
                           className="object-contain" 
-                          priority
                         />
                       </div>
                       <Sparkles size={20} className="text-yellow-500/20" />
@@ -136,7 +139,7 @@ const smoothSpring = {
                     </div>
                   </div>
 
-                  {/* BACK SIDE (LOGO DIVISI OVAL PUTIH SEMPURNA) */}
+                  {/* BACK SIDE (LOGO DIVISI) */}
                   <div 
                     className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#0B1F40] to-[#030712] border border-yellow-500/40 rounded-[3rem] flex flex-col items-center justify-center p-12 text-center shadow-2xl" 
                     style={{ 
@@ -146,8 +149,6 @@ const smoothSpring = {
                       transformStyle: "preserve-3d" 
                     }}
                   >
-                    
-                    {/* Lingkaran Oval Putih Lebih Besar */}
                     <div className="w-32 h-32 bg-white rounded-[3rem] flex items-center justify-center p-6 mb-10 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden relative border-4 border-white/20">
                       <Image 
                         src={division.logo} 
@@ -155,7 +156,6 @@ const smoothSpring = {
                         fill 
                         className="p-6 object-contain" 
                         sizes="128px"
-                        priority
                       />
                     </div>
                     
