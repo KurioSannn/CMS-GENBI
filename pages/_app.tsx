@@ -1,12 +1,12 @@
 // pages/_app.tsx
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
-import dynamic from 'next/dynamic';
-import Head from 'next/head';
+import dynamic from "next/dynamic";
+import Head from "next/head";
 import { useEffect, useState } from "react";
 
 const BackgroundMusic = dynamic(
-  () => import('@/components/BackgroundMusic'),
+  () => import("@/components/BackgroundMusic"),
   { ssr: false }
 );
 
@@ -25,17 +25,22 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta charSet="utf-8" />
         <meta name="robots" content="index, follow" />
         <meta name="author" content="GenBI UPNVJT" />
-        <meta name="google-site-verification" content="MASUKKAN-KODE-DARI-SEARCH-CONSOLE" />
-        
+
+        {/* ✅ Google Search Console Verification */}
+        <meta
+          name="google-site-verification"
+          content="UVAXdbJjqBNfRQjJ5wQl6OZnaPn_Mcpo9PQILBdNxck"
+        />
+
         {/* Favicon & Icons */}
         <link rel="icon" href="/favicongenbiupnvj.png" type="image/png" />
         <link rel="shortcut icon" href="/favicongenbiupnvj.png" />
         <link rel="apple-touch-icon" href="/favicongenbiupnvj.png" />
-        
+
         {/* Theme Color */}
         <meta name="theme-color" content="#0B1F40" />
       </Head>
-      
+
       {isClient && <BackgroundMusic />}
       <Component {...pageProps} />
     </>
