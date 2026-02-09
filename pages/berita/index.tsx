@@ -1,21 +1,75 @@
-// pages/berita/index.tsx
+// pages/index.tsx
+import Head from 'next/head'
 import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import Hero from '@/components/Hero'
+import Prestasi from '@/components/Prestasi'
+import AboutCarousel from '@/components/AboutCarousel'
+import VisiMisi from '@/components/VisiMisi'
+import Kegiatan from '@/components/Kegiatan'
+import Struktur from '@/components/Struktur'
+import CapaianDanTentang from '@/components/CapaianDanTentang'
 import GenBINews from '@/components/GenBINews'
 import GenBIJoinCTA from '@/components/GenBIJoinCTA'
-import Head from 'next/head'
+import GenBIContactFAQ from '@/components/GenBIContactFAQ'
+import Footer from '@/components/Footer'
 
-export default function BeritaPage() {
+export default function Home() {
+  // Domain asli sudah terpasang
+  const siteUrl = "https://www.genbiupnvjatim.com"; 
+
   return (
     <>
       <Head>
-        <title>Arsip Berita | GenBI UPNVJT</title>
+        {/* --- PRIMARY SEO --- */}
+        <title>GenBI UPNVJT - Energi untuk Negeri | Official Website</title>
+        <meta name="description" content="Website resmi Generasi Baru Indonesia (GenBI) UPN 'Veteran' Jawa Timur. Komunitas mahasiswa penerima beasiswa Bank Indonesia." />
+        <meta name="keywords" content="GenBI, GenBI UPNVJT, UPN Veteran Jawa Timur, Beasiswa Bank Indonesia, Bank Indonesia, Energi Untuk Negeri, GenBI Jatim" />
+        
+        {/* --- OPEN GRAPH (Preview WA, IG, FB) --- */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={siteUrl} />
+        <meta property="og:title" content="GenBI UPNVJT - Energi untuk Negeri" />
+        <meta property="og:description" content="Official Website GenBI UPN 'Veteran' Jawa Timur. Garda terdepan komunikasi kebijakan Bank Indonesia." />
+        <meta property="og:image" content={`${siteUrl}/favicongenbiupnvj.png`} />
+
+        {/* --- TWITTER CARD --- */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="GenBI UPNVJT - Energi untuk Negeri" />
+        <meta name="twitter:image" content={`${siteUrl}/favicongenbiupnvj.png`} />
+
+        {/* --- SCHEMA MARKUP --- */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "GenBI UPNVJT",
+              "url": siteUrl,
+              "logo": `${siteUrl}/favicongenbiupnvj.png`,
+              "sameAs": [
+                "https://www.instagram.com/genbiupnjatim"
+              ]
+            })
+          }}
+        />
       </Head>
-      <Navbar isScrolled={true} />
-      <main className="pt-20"> 
+
+      <Navbar />
+      
+      <main className="overflow-x-hidden"> 
+        <Hero />
+        <Prestasi />
+        <AboutCarousel />
+        <VisiMisi />
+        <Kegiatan />
+        <Struktur />
+        <CapaianDanTentang />
         <GenBINews />
         <GenBIJoinCTA />
+        <GenBIContactFAQ /> 
       </main>
+
       <Footer />
     </>
   )
