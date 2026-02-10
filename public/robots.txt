@@ -1,4 +1,10 @@
+# Izinkan semua robot pencari untuk merayapi website
 User-agent: *
 Allow: /
 
+# Cegah akses ke folder privat jika ada
+Disallow: /api/
+Disallow: /_next/
+
+# Tautan langsung ke peta situs untuk mempercepat indexing logo
 Sitemap: https://www.genbiupnvjatim.com/sitemap.xml
