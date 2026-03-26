@@ -18,7 +18,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        {/* --- 1. PRIMARY SEO (Tegas & Lugas) --- */}
+        {/* --- 1. PRIMARY SEO --- */}
         <title>GenBI UPNVJT - Energi untuk Negeri | Official Website</title>
         <meta name="description" content="GenBI UPNVJATIM - Generasi Baru Indonesia (GenBI) Komisariat Universitas Pembangunan Nasional Veteran Jawa Timur (UPNVJATIM). Kami adalah garda terdepan bagi bangsa dalam mendukung kebijakan Bank Indonesia dan wadah bagi mahasiswa penerima beasiswa BI untuk memberikan kontribusi nyata bagi negeri." />
         <meta name="keywords" content="GenBI UPNVJT, GenBI UPN Jatim, Beasiswa Bank Indonesia, genbi jatim, genbi surabaya, GenBI Indonesia, UPN Veteran Jawa Timur, Garda Terdepan Bangsa, Energi Untuk Negeri, satugenbi, genbi, upnvj, upnvjatim, UPNVJATIM, GenBINews, GenBI UPN Jatim website, website GenBI UPN Jatim, Beasiswa GenBI UPNVJATIM" />

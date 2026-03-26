@@ -1,16 +1,25 @@
 "use client";
 import React from 'react';
+import Head from 'next/head';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import VisiMisi from '@/components/VisiMisi';
 import { genbiPhotos } from '@/data/members';
-import { Sparkles, Zap } from 'lucide-react';
+import { Sparkles, Zap, Award } from 'lucide-react';
 
 const ProfilPage = () => {
+  const siteUrl = "https://www.genbiupnvjatim.com";
+
   return (
     <div className="bg-[#050B18] min-h-screen text-white">
+      <Head>
+        <title>Profil Pembina & Struktur - GenBI UPNVJT</title>
+        <meta name="description" content="Mengenal Bapak M. Khadik Asrori selaku Pembina GenBI UPNVJT dan seluruh jajaran keluarga besar GenBI UPNVJT." />
+        <meta property="og:url" content={`${siteUrl}/profil`} />
+      </Head>
+
       <Navbar isScrolled={true} />
 
       <main className="pt-32 pb-20">
@@ -48,7 +57,63 @@ const ProfilPage = () => {
             </div>
           </motion.div>
 
-          {/* 2. Jargon Section (Kecil, Elegant, Gradasi Putih-Kuning-Orange) */}
+       {/* 2. Section Pembina Organisasi - RE-ADJUSTED SIZE */}
+<motion.section 
+  initial={{ opacity: 0, y: 40 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.8 }}
+  className="mb-32 bg-white/5 p-8 md:p-14 rounded-[3.5rem] border border-white/10 backdrop-blur-sm shadow-xl"
+>
+  <div className="flex items-center gap-4 mb-12 border-b border-white/10 pb-6">
+    <Award className="text-yellow-500" size={36} />
+    <h2 className="text-3xl md:text-5xl font-black text-white uppercase tracking-tighter italic">
+      Pembina <span className="text-yellow-500">Organisasi</span>
+    </h2>
+  </div>
+
+  <div className="flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
+    {/* Kontainer Foto - DIBESARKAN & SPACE DISESUAIKAN */}
+    <div className="w-full lg:w-1/3 flex justify-center">
+      <motion.div 
+        whileHover={{ scale: 1.02 }}
+        className="relative rounded-[2.5rem] overflow-hidden shadow-2xl border-4 border-yellow-500/20 w-64 h-80 md:w-80 md:h-[420px]"
+      >
+        <Image 
+          src="/pembina-genbi-khadik.jpeg"
+          alt="Bapak M. Khadik Asrori, S.TP, M.LING"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 256px, 320px"
+          priority
+        />
+      </motion.div>
+    </div>
+    
+    {/* Kontainer Teks - TEKS LEBIH BESAR & PADAT */}
+    <div className="w-full lg:w-2/3 space-y-6 text-center lg:text-left">
+      <div>
+        <h3 className="text-3xl md:text-5xl font-extrabold text-white mb-3 leading-tight tracking-tight">
+          M. Khadik Asrori, S.TP, M.LING
+        </h3>
+        <div className="inline-block px-5 py-2 bg-yellow-500 text-[#050B18] text-xs font-black uppercase tracking-[0.2em] rounded-xl italic">
+          Pembina GenBI UPNVJT
+        </div>
+      </div>
+      
+      <div className="space-y-6 text-slate-200 text-lg md:text-xl leading-relaxed italic font-medium">
+        <p>
+          "Dalam kepengurusan Generasi Baru Indonesia (GenBI) Komisariat UPN "Veteran" Jawa Timur, kehadiran Bapak M. Khadik Asrori, S.TP, M.LING selaku Pembina memegang peranan esensial. Beliau memberikan arahan, bimbingan, serta motivasi yang luhur bagi seluruh anggota dalam menunaikan misi luhur sebagai garda terdepan bangsa."
+        </p>
+        <p className="font-black text-yellow-500 text-2xl md:text-3xl tracking-tighter uppercase">
+          "Energi Untuk Negeri, Komitmen Untuk Mengabdi."
+        </p>
+      </div>
+    </div>
+  </div>
+</motion.section>
+
+          {/* 3. Jargon Section */}
           <section className="py-12 mb-20 border-y border-white/5">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               {["LEAD", "INSPIRE", "IMPACT"].map((word, i) => (
@@ -60,7 +125,6 @@ const ProfilPage = () => {
                   transition={{ delay: i * 0.2 }}
                   className="flex flex-col items-center group"
                 >
-                  {/* Gradasi Putih -> Kuning -> Orange */}
                   <div className="text-4xl md:text-5xl font-black italic tracking-[0.15em] bg-gradient-to-r from-white via-yellow-400 to-orange-500 bg-clip-text text-transparent transition-all duration-500 group-hover:tracking-[0.25em]">
                     {word}
                   </div>
@@ -73,13 +137,12 @@ const ProfilPage = () => {
             </div>
           </section>
 
-          {/* 3. Galeri Struktur Keluarga */}
+          {/* 4. Galeri Struktur Keluarga */}
           <section className="mt-32 mb-32">
             <div className="text-center mb-20">
               <h2 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter mb-6 bg-gradient-to-r from-yellow-200 via-yellow-500 to-amber-600 bg-clip-text text-transparent">
                 Struktur Keluarga
               </h2>
-              
               <div className="flex flex-col items-center gap-4">
                 <div className="flex items-center gap-3 px-4 py-1 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
                   <Zap size={14} className="text-yellow-500 animate-pulse" />
@@ -124,7 +187,6 @@ const ProfilPage = () => {
             </div>
           </section>
 
-          {/* 4. Section Visi & Misi */}
           <div className="border-t border-white/5 pt-20">
             <VisiMisi />
           </div>
