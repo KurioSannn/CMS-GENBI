@@ -48,6 +48,10 @@ agent*.md
 .claude/
 .cursor/
 .windsurf/
+PRD.md
+*PRD*.md
+ROADMAP.md
+*ROADMAP*.md
 
 # Logs
 *.log
