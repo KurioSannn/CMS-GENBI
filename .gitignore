@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI Agent & Rules
+AGENTS.md
+agent*.md
+.agent/
+.gemini/
+.claude/
+.cursor/
+.windsurf/
+
+# Logs
+*.log
+logs/
+
+# IDE & OS files
+.idea/
+.vscode/
+Thumbs.db
+
+# CMS Uploads (menjaga agar gambar upload-an VPS tidak membebani repo git)
+/public/uploads/*
+!/public/uploads/.gitkeep
