@@ -1,0 +1,134 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// 1. Akun Admin Dashboard
+model AdminUser {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique
+  email        String        @unique
+  passwordHash String
+  name         String
+  role         String        @default("admin") // "superadmin", "admin"
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  logs         ActivityLog[]
+}
+
+// 2. Audit Trail / Log Aktivitas Admin
+model ActivityLog {
+  id          Int        @id @default(autoincrement())
+  adminId     Int?
+  admin       AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+  action      String     // "UPLOAD_IMAGE", "CREATE_NEWS", "UPDATE_BPH", dll
+  description String
+  ipAddress   String?
+  createdAt   DateTime   @default(now())
+}
+
+// 3. Carousel Hero / Banner Beranda
+model Banner {
+  id         Int      @id @default(autoincrement())
+  title      String
+  subtitle   String?
+  imageUrl   String
+  buttonText String?
+  buttonUrl  String?
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// 4. Struktur Organisasi BPH & Pembina
+model BphMember {
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String   // "PEMBINA", "KETUA", "WAKIL", "SEKRETARIS", "BENDAHARA"
+  position  String   // e.g. "Ketua Umum GenBI UPNVJT 2026"
+  imageUrl  String
+  quote     String?
+  instagram String?
+  linkedin  String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 5. Divisi & Anggota
+model Division {
+  id           Int              @id @default(autoincrement())
+  name         String           // e.g. "Ekonomi Kreatif", "Pendidikan"
+  slug         String           @unique
+  tagline      String?
+  description  String
+  logoUrl      String?
+  teamPhotoUrl String?
+  sortOrder    Int              @default(0)
+  members      DivisionMember[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+}
+
+model DivisionMember {
+  id            Int      @id @default(autoincrement())
+  divisionId    Int
+  division      Division @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  name          String
+  role          String   // "Ketua Divisi", "Staff"
+  prodiAngkatan String?  // e.g. "Informatika '22"
+  imageUrl      String
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// 6. Berita, Pengumuman & Artikel
+model Article {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  excerpt     String
+  content     String    // HTML / JSON BlockNote
+  coverImage  String
+  category    String    @default("Edukasi")
+  author      String    @default("Humas GenBI")
+  status      String    @default("PUBLISHED") // "DRAFT", "PUBLISHED"
+  publishedAt DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// 7. Prestasi & Penghargaan
+model Achievement {
+  id          Int      @id @default(autoincrement())
+  title       String
+  recipient   String   @default("GenBI UPNVJT")
+  competition String   // e.g. "KPw. Bank Indonesia Jawa Timur 2024"
+  badge       String?  // e.g. "1st Winner"
+  rank        String   @default("gold") // "gold", "silver", "bronze"
+  year        String   @default("2025")
+  imageUrl    String
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 8. Dokumen Resmi & Arsip PDF
+model DocumentArchive {
+  id          Int      @id @default(autoincrement())
+  title       String
+  category    String   // "SK", "LPJ", "BEASISWA", "PROPOSAL"
+  fileUrl     String   // Path file PDF
+  fileSize    String?  // e.g. "2.4 MB"
+  description String?
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

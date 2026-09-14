@@ -4,6 +4,7 @@ import type { AppProps } from "next/app";
 import dynamic from "next/dynamic";
 import Head from "next/head";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
 const BackgroundMusic = dynamic(
   () => import("@/components/BackgroundMusic"),
@@ -12,6 +13,8 @@ const BackgroundMusic = dynamic(
 
 export default function App({ Component, pageProps }: AppProps) {
   const [isClient, setIsClient] = useState(false);
+  const router = useRouter();
+  const isAdmin = router.pathname.startsWith('/admin');
 
   useEffect(() => {
     setIsClient(true);
@@ -41,8 +44,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta name="theme-color" content="#0B1F40" />
       </Head>
 
-      {isClient && <BackgroundMusic />}
+      {isClient && !isAdmin && <BackgroundMusic />}
       <Component {...pageProps} />
     </>
   );
 }
+
