@@ -2,42 +2,58 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Trophy, Star, Medal } from 'lucide-react';
+import type { Achievement } from '@/lib/db';
 
-const Prestasi = () => {
-  const achievements = [
-    {
-      id: 4,
-      title: "1st Winner Duta Millenial Penggerak CBPR",
-      event: "KPw. Bank Indonesia Jawa Timur 2024",
-      image: "/prestasi-1.jpg",
-      badge: "1st Winner",
-      rank: "gold"
-    },
-    {
-      id: 1,
-      title: "Juara 2 QRIS Jelajah Budaya Indonesia",
-      event: "KORWIL Jawa 2025",
-      image: "/prestasi-2.jpg",
-      badge: "2nd Place",
-      rank: "silver"
-    },
-    {
-      id: 2,
-      title: "Juara 2 Konten Cinta Bangga Paham Rupiah",
-      event: "ARFEST 2025",
-      image: "/prestasi-3.jpg",
-      badge: "2nd Place",
-      rank: "silver"
-    },
-    {
-      id: 3,
-      title: "3rd Runner Up Duta CBPR Nasional",
-      event: "Duta Muda 2025",
-      image: "/prestasi-4.jpg",
-      badge: "Runner Up",
-      rank: "bronze"
-    },
-  ];
+interface PrestasiProps {
+  achievements?: Achievement[];
+}
+
+const defaultAchievements = [
+  {
+    id: 4,
+    title: "1st Winner Duta Millenial Penggerak CBPR",
+    event: "KPw. Bank Indonesia Jawa Timur 2024",
+    image: "/prestasi-1.jpg",
+    badge: "1st Winner",
+    rank: "gold"
+  },
+  {
+    id: 1,
+    title: "Juara 2 QRIS Jelajah Budaya Indonesia",
+    event: "KORWIL Jawa 2025",
+    image: "/prestasi-2.jpg",
+    badge: "2nd Place",
+    rank: "silver"
+  },
+  {
+    id: 2,
+    title: "Juara 2 Konten Cinta Bangga Paham Rupiah",
+    event: "ARFEST 2025",
+    image: "/prestasi-3.jpg",
+    badge: "2nd Place",
+    rank: "silver"
+  },
+  {
+    id: 3,
+    title: "3rd Runner Up Duta CBPR Nasional",
+    event: "Duta Muda 2025",
+    image: "/prestasi-4.jpg",
+    badge: "Runner Up",
+    rank: "bronze"
+  },
+];
+
+const Prestasi = ({ achievements }: PrestasiProps) => {
+  const displayAchievements = achievements && achievements.length > 0
+    ? achievements.map(a => ({
+        id: a.id,
+        title: a.title,
+        event: a.competition,
+        image: a.imageUrl,
+        badge: a.badge || a.rank,
+        rank: a.rank,
+      }))
+    : defaultAchievements;
 
   const getBadgeColor = (rank: string) => {
     switch (rank) {
@@ -50,8 +66,7 @@ const Prestasi = () => {
 
   return (
     <section className="py-24 relative overflow-hidden text-white">
-      
-      {/* === BACKGROUND IMAGE (TAJAM & JELAS Tanpa Motif Batik) === */}
+      {/* === BACKGROUND IMAGE === */}
       <div className="absolute inset-0 z-0">
         <Image 
           src="/prestasi-bg.jpg" 
@@ -61,14 +76,12 @@ const Prestasi = () => {
           priority
           className="object-cover"
         />
-        {/* Overlay agar teks tetap terbaca tanpa menghilangkan detail foto */}
         <div className="absolute inset-0 bg-[#0B1F40]/40 mix-blend-multiply"></div> 
         <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F40] via-transparent to-transparent opacity-70"></div>
       </div>
 
       <div className="container mx-auto px-6 relative z-20">
-        
-        {/* HEADER SECTION DENGAN ANIMASI REPEAT SCROLL */}
+        {/* HEADER SECTION */}
         <div className="text-center mb-16">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -81,7 +94,6 @@ const Prestasi = () => {
             Hall of Fame
           </motion.div>
           
-          {/* JUDUL DENGAN GRADASI WARNA FONT KONSISTEN */}
           <motion.h2 
             initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
             whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -108,9 +120,9 @@ const Prestasi = () => {
           </motion.p>
         </div>
 
-        {/* GRID PRESTASI DENGAN ANIMASI MASUK SETIAP SCROLL */}
+        {/* GRID PRESTASI */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {achievements.map((item, index) => (
+          {displayAchievements.map((item, index) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -119,10 +131,8 @@ const Prestasi = () => {
               transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
               className="group relative h-[420px] rounded-2xl overflow-hidden cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-yellow-500/30 transition-all duration-500 border border-white/20 backdrop-blur-sm"
             >
-              {/* Border Emas saat Hover */}
               <div className="absolute inset-0 border-2 border-transparent group-hover:border-yellow-400 z-20 rounded-2xl transition-colors duration-300"></div>
 
-              {/* Gambar Card */}
               <Image 
                 src={item.image} 
                 alt={item.title} 
@@ -131,10 +141,8 @@ const Prestasi = () => {
                 className="group-hover:scale-110 transition-transform duration-700 ease-in-out"
               />
 
-              {/* Overlay Gradient Card */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F40] via-[#0B1F40]/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
 
-              {/* Badge Medali */}
               <div className="absolute top-4 right-4 z-20">
                 <div className={`${getBadgeColor(item.rank)} text-xs font-bold px-3 py-1 rounded-md shadow-lg flex items-center gap-1.5 border-b-2`}>
                   <Medal size={14} />
@@ -142,7 +150,6 @@ const Prestasi = () => {
                 </div>
               </div>
 
-              {/* Konten Teks Card */}
               <div className="absolute bottom-0 left-0 p-6 w-full z-20 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                 <div className="w-12 h-1 bg-yellow-400 mb-3 rounded-full opacity-100"></div>
                 
@@ -158,7 +165,6 @@ const Prestasi = () => {
             </motion.div>
           ))}
         </div>
-
       </div>
     </section>
   );

@@ -5,37 +5,61 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import type { Banner } from '@/lib/db';
 
-const Hero = () => {
+interface HeroProps {
+  banners?: Banner[];
+}
+
+const defaultSlides = [
+  {
+    id: 1,
+    image: "/carousel-1.jpg",
+    title: "Generasi Baru Indonesia",
+    subtitle: "Energi untuk Negeri",
+    desc: "Komunitas penerima beasiswa Bank Indonesia yang siap menjadi agen perubahan dan pemimpin masa depan.",
+    buttonText: "Jelajahi Kami",
+    buttonUrl: "#tentang-kami",
+  },
+  {
+    id: 2,
+    image: "/corousel-2.jpg",
+    title: "Dedikasi Untuk Negeri",
+    subtitle: "Berkontribusi Nyata",
+    desc: "Mengabdi kepada masyarakat melalui program sosial, pendidikan, dan pengembangan ekonomi kreatif.",
+    buttonText: "Lihat Kegiatan",
+    buttonUrl: "#kegiatan",
+  },
+  {
+    id: 3,
+    image: "/corousel-3.jpg",
+    title: "Frontliner Bank Indonesia",
+    subtitle: "Mengkomunikasikan Kebijakan",
+    desc: "Menjadi garda terdepan dalam menyampaikan kebijakan Bank Indonesia kepada masyarakat luas.",
+    buttonText: "Baca Berita",
+    buttonUrl: "/berita",
+  },
+];
+
+const Hero = ({ banners }: HeroProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 }, [
     Autoplay({ delay: 6000, stopOnInteraction: false })
   ]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const slides = [
-    {
-      id: 1,
-      image: "/carousel-1.jpg",
-      title: "Generasi Baru Indonesia",
-      subtitle: "Energi untuk Negeri",
-      desc: "Komunitas penerima beasiswa Bank Indonesia yang siap menjadi agen perubahan dan pemimpin masa depan."
-    },
-    {
-      id: 2,
-      image: "/corousel-2.jpg",
-      title: "Dedikasi Untuk Negeri",
-      subtitle: "Berkontribusi Nyata",
-      desc: "Mengabdi kepada masyarakat melalui program sosial, pendidikan, dan pengembangan ekonomi kreatif."
-    },
-    {
-      id: 3,
-      image: "/corousel-3.jpg",
-      title: "Frontliner Bank Indonesia",
-      subtitle: "Mengkomunikasikan Kebijakan",
-      desc: "Menjadi garda terdepan dalam menyampaikan kebijakan Bank Indonesia kepada masyarakat luas."
-    },
-  ];
+  const activeBanners = banners?.filter(b => b.isActive);
+  const slides = activeBanners && activeBanners.length > 0
+    ? activeBanners.map(b => ({
+        id: b.id,
+        image: b.imageUrl,
+        title: b.title,
+        subtitle: b.subtitle || "Energi untuk Negeri",
+        desc: b.subtitle || "Komunitas penerima beasiswa Bank Indonesia yang siap menjadi agen perubahan dan pemimpin masa depan.",
+        buttonText: b.buttonText || "Jelajahi Kami",
+        buttonUrl: b.buttonUrl || "#tentang-kami",
+      }))
+    : defaultSlides;
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -49,7 +73,6 @@ const Hero = () => {
 
   return (
     <section id="beranda" className="relative h-screen w-full overflow-hidden bg-[#0B1F40]">
-      
       {/* Container Carousel */}
       <div className="h-full w-full" ref={emblaRef}>
         <div className="flex h-full">
@@ -61,7 +84,7 @@ const Hero = () => {
                 <Image 
                   src={slide.image} 
                   alt={slide.title} 
-                  fill
+                  fill 
                   style={{ objectFit: 'cover' }}
                   priority={index === 0}
                   className="brightness-[0.85]"
@@ -117,8 +140,8 @@ const Hero = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.8, duration: 0.8 }}
                     >
-                        <a href="#tentang-kami" className="group inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 text-[#0B1F40] font-bold rounded-full hover:bg-white transition-all shadow-lg shadow-yellow-500/20 hover:shadow-white/20 transform hover:-translate-y-1">
-                            Jelajahi Kami
+                        <a href={slide.buttonUrl} className="group inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 text-[#0B1F40] font-bold rounded-full hover:bg-white transition-all shadow-lg shadow-yellow-500/20 hover:shadow-white/20 transform hover:-translate-y-1">
+                            {slide.buttonText}
                             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform"/>
                         </a>
                     </motion.div>
