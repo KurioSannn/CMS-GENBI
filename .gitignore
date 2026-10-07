@@ -65,3 +65,7 @@ Thumbs.db
 # CMS Uploads (menjaga agar gambar upload-an VPS tidak membebani repo git)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# Local SQLite Database
+prisma/*.db
+*.db-journal

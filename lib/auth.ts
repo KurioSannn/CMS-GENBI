@@ -39,7 +39,11 @@ export function setAuthCookie(res: NextApiResponse, token: string) {
 }
 
 export function clearAuthCookie(res: NextApiResponse) {
-  res.setHeader('Set-Cookie', `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  const isProd = process.env.NODE_ENV === 'production';
+  res.setHeader(
+    'Set-Cookie',
+    `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT${isProd ? '; Secure' : ''}`
+  );
 }
 
 export function getAuthUser(req: NextApiRequest): AdminPayload | null {

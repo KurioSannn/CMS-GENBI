@@ -60,7 +60,7 @@ model BphMember {
   updatedAt DateTime @updatedAt
 }
 
-// 5. Divisi & Anggota
+// 5. Divisi, Anggota & Program Kerja
 model Division {
   id           Int              @id @default(autoincrement())
   name         String           // e.g. "Ekonomi Kreatif", "Pendidikan"
@@ -71,6 +71,7 @@ model Division {
   teamPhotoUrl String?
   sortOrder    Int              @default(0)
   members      DivisionMember[]
+  workPrograms WorkProgram[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
 }
@@ -88,15 +89,27 @@ model DivisionMember {
   updatedAt     DateTime @updatedAt
 }
 
-// 6. Berita, Pengumuman & Artikel
+// 6. Master Kategori Dinamis (Berita, Dokumen, Proker)
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String
+  slug        String   @unique
+  type        String   // "ARTICLE", "DOCUMENT", "PROKER"
+  description String?
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// 7. Berita, Pengumuman & Artikel
 model Article {
   id          Int       @id @default(autoincrement())
   title       String
   slug        String    @unique
   excerpt     String
-  content     String    // HTML / JSON BlockNote
+  content     String    // HTML / JSON
   coverImage  String
-  category    String    @default("Edukasi")
+  category    String    @default("Edukasi BI")
   author      String    @default("Humas GenBI")
   status      String    @default("PUBLISHED") // "DRAFT", "PUBLISHED"
   publishedAt DateTime  @default(now())
@@ -104,7 +117,7 @@ model Article {
   updatedAt   DateTime  @updatedAt
 }
 
-// 7. Prestasi & Penghargaan
+// 8. Prestasi & Penghargaan
 model Achievement {
   id          Int      @id @default(autoincrement())
   title       String
@@ -120,15 +133,35 @@ model Achievement {
   updatedAt   DateTime @updatedAt
 }
 
-// 8. Dokumen Resmi & Arsip PDF
+// 9. Dokumen Resmi & Arsip PDF
 model DocumentArchive {
   id          Int      @id @default(autoincrement())
   title       String
-  category    String   // "SK", "LPJ", "BEASISWA", "PROPOSAL"
+  category    String   // "SK", "LPJ", "BEASISWA", "PROPOSAL", "PANDUAN"
   fileUrl     String   // Path file PDF
   fileSize    String?  // e.g. "2.4 MB"
   description String?
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// 10. Program Kerja & Kegiatan Divisi
+model WorkProgram {
+  id             Int       @id @default(autoincrement())
+  divisionId     Int
+  division       Division  @relation(fields: [divisionId], references: [id], onDelete: Cascade)
+  title          String
+  slug           String    @unique
+  description    String
+  personInCharge String?   // PJ Proker
+  status         String    @default("PLANNED") // "PLANNED", "ONGOING", "COMPLETED"
+  startDate      DateTime?
+  endDate        DateTime?
+  targetAudience String?
+  budget         String?
+  imageUrl       String?
+  sortOrder      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }

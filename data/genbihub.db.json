@@ -1507,6 +1507,33 @@
       "description": "Admin Administrator GenBI berhasil login ke dashboard",
       "ipAddress": "::1",
       "createdAt": "2026-09-14T06:43:10.089Z"
+    },
+    {
+      "id": 5,
+      "adminId": 1,
+      "adminName": "Administrator GenBI",
+      "action": "LOGIN",
+      "description": "Admin Administrator GenBI berhasil login ke dashboard",
+      "ipAddress": "::1",
+      "createdAt": "2026-10-07T03:14:23.505Z"
+    },
+    {
+      "id": 6,
+      "adminId": 1,
+      "adminName": "Administrator GenBI",
+      "action": "LOGIN",
+      "description": "Admin Administrator GenBI berhasil login ke dashboard",
+      "ipAddress": "::1",
+      "createdAt": "2026-10-07T03:14:33.095Z"
+    },
+    {
+      "id": 7,
+      "adminId": 1,
+      "adminName": "Administrator GenBI",
+      "action": "LOGIN",
+      "description": "Admin Administrator GenBI berhasil login ke dashboard",
+      "ipAddress": "::1",
+      "createdAt": "2026-10-07T11:09:33.234Z"
     }
   ]
 }

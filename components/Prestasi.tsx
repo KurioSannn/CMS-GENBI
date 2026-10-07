@@ -56,11 +56,14 @@ const Prestasi = ({ achievements }: PrestasiProps) => {
     : defaultAchievements;
 
   const getBadgeColor = (rank: string) => {
-    switch (rank) {
-      case 'gold': return 'bg-yellow-500 text-white border-yellow-300';
-      case 'silver': return 'bg-gray-400 text-white border-gray-300';
+    switch (rank.toLowerCase()) {
+      case 'gold': return 'bg-amber-500 text-white border-amber-300';
+      case 'silver': return 'bg-slate-400 text-white border-slate-200';
       case 'bronze': return 'bg-orange-500 text-white border-orange-300';
-      default: return 'bg-blue-500 text-white';
+      case 'finalist': return 'bg-sky-500 text-white border-sky-300';
+      case 'delegate': return 'bg-emerald-500 text-white border-emerald-300';
+      case 'special': return 'bg-purple-500 text-white border-purple-300';
+      default: return 'bg-blue-500 text-white border-blue-300';
     }
   };
 

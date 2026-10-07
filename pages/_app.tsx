@@ -1,4 +1,3 @@
-// pages/_app.tsx
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import dynamic from "next/dynamic";
@@ -21,7 +20,7 @@ export default function App({ Component, pageProps }: AppProps) {
   }, []);
 
   return (
-    <>
+    <div className="font-sans min-h-screen">
       <Head>
         {/* --- GLOBAL SEO & BROWSER --- */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -46,7 +45,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
       {isClient && !isAdmin && <BackgroundMusic />}
       <Component {...pageProps} />
-    </>
+    </div>
   );
 }
 
