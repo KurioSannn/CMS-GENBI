@@ -20,7 +20,7 @@ const ProfilPage = () => {
         <meta property="og:url" content={`${siteUrl}/profil`} />
       </Head>
 
-      <Navbar isScrolled={true} />
+      <Navbar />
 
       <main className="pt-32 pb-20">
         <div className="container mx-auto px-6 max-w-[1400px]">

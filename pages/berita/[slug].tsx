@@ -47,7 +47,7 @@ export default function DetailBerita({ article }: DetailBeritaProps) {
         <meta property="og:url" content={pageUrl} />
       </Head>
 
-      <Navbar isScrolled={true} />
+      <Navbar />
 
       <main className="min-h-screen bg-slate-50 pt-28 pb-20">
         <article className="container mx-auto px-4 max-w-4xl">

@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 interface FileUploadProps {
   value?: string | null;
   onChange: (url: string) => void;
-  scope?: 'banner' | 'members' | 'berita' | 'prestasi' | 'dokumen' | 'general';
+  scope?: 'banner' | 'members' | 'berita' | 'prestasi' | 'dokumen' | 'general' | 'divisi';
   aspectRatio?: number; // e.g. 1 for 1:1, 16/9 for 16:9
   acceptPdf?: boolean;
   label?: string;

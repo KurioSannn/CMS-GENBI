@@ -16,13 +16,13 @@
       "id": 1,
       "title": "Generasi Baru Indonesia",
       "subtitle": "Energi untuk Negeri",
-      "imageUrl": "/carousel-1.jpg",
+      "imageUrl": "/uploads/banner/9b729a90-26ca-44c8-89e4-d0bf3183584b.webp",
       "buttonText": "Jelajahi Profil",
       "buttonUrl": "/profil",
       "sortOrder": 1,
       "isActive": true,
       "createdAt": "2026-09-14T06:20:19.133Z",
-      "updatedAt": "2026-09-14T06:20:19.133Z"
+      "updatedAt": "2026-09-14T06:52:34.560Z"
     },
     {
       "id": 2,
@@ -1512,6 +1512,7 @@
       "id": 5,
       "adminId": 1,
       "adminName": "Administrator GenBI",
+<<<<<<< Updated upstream
       "action": "LOGIN",
       "description": "Admin Administrator GenBI berhasil login ke dashboard",
       "ipAddress": "::1",
@@ -1534,6 +1535,12 @@
       "description": "Admin Administrator GenBI berhasil login ke dashboard",
       "ipAddress": "::1",
       "createdAt": "2026-10-07T11:09:33.234Z"
+=======
+      "action": "UPDATE_BANNER",
+      "description": "Memperbarui banner ID: 1",
+      "ipAddress": null,
+      "createdAt": "2026-09-14T06:52:34.580Z"
+>>>>>>> Stashed changes
     }
   ]
 }

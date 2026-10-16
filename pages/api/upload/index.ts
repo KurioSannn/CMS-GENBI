@@ -35,7 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     maxFileSize: 25 * 1024 * 1024, // 25MB
   });
 
-  form.parse(req, async (err, fields, files) => {
+  form.parse(req, async (err: any, fields: any, files: any) => {
     if (err) {
       console.error('Upload parse error:', err);
       return res.status(400).json({ success: false, message: 'Gagal memproses file upload' });

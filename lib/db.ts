@@ -466,7 +466,7 @@ function getInitialData(): DatabaseSchema {
 }
 
 // Helper membaca & menulis database atomic
-function readDb(): DatabaseSchema {
+export function readDb(): DatabaseSchema {
   try {
     if (!fs.existsSync(DB_FILE_PATH)) {
       const initial = getInitialData();
@@ -481,6 +481,8 @@ function readDb(): DatabaseSchema {
     return getInitialData();
   }
 }
+
+export const readDatabase = readDb;
 
 function writeDb(data: DatabaseSchema): void {
   try {

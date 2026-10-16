@@ -1,3 +1,4 @@
+import { GetServerSideProps } from 'next'
 import Head from 'next/head'
 import Navbar from '@/components/Navbar'
 import Hero from '@/components/Hero'
@@ -11,8 +12,38 @@ import GenBINews from '@/components/GenBINews'
 import GenBIJoinCTA from '@/components/GenBIJoinCTA'
 import GenBIContactFAQ from '@/components/GenBIContactFAQ'
 import Footer from '@/components/Footer'
+import db, { Banner, Achievement, Article, Division } from '@/lib/db'
 
-export default function Home() {
+interface HomeProps {
+  banners: Banner[];
+  achievements: Achievement[];
+  articles: Article[];
+  divisions: Division[];
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const [allBanners, allAchievements, allArticles, divisions] = await Promise.all([
+    db.banner.findMany(),
+    db.achievement.findMany(),
+    db.article.findMany('PUBLISHED'),
+    db.division.findMany(),
+  ]);
+
+  const banners = allBanners.filter((b) => b.isActive);
+  const achievements = allAchievements.slice(0, 6);
+  const articles = allArticles.slice(0, 5);
+
+  return {
+    props: {
+      banners: JSON.parse(JSON.stringify(banners)),
+      achievements: JSON.parse(JSON.stringify(achievements)),
+      articles: JSON.parse(JSON.stringify(articles)),
+      divisions: JSON.parse(JSON.stringify(divisions)),
+    },
+  };
+};
+
+export default function Home({ banners, achievements, articles, divisions }: HomeProps) {
   const siteUrl = "https://www.genbiupnvjatim.com"; 
 
   return (
@@ -102,14 +133,14 @@ export default function Home() {
       <Navbar />
       
       <main className="overflow-x-hidden"> 
-        <Hero />
-        <Prestasi />
+        <Hero banners={banners} />
+        <Prestasi achievements={achievements} />
         <AboutCarousel />
         <VisiMisi />
         <Kegiatan />
-        <Struktur />
+        <Struktur divisions={divisions} />
         <CapaianDanTentang />
-        <GenBINews />
+        <GenBINews articles={articles} />
         <GenBIJoinCTA />
         <GenBIContactFAQ /> 
       </main>

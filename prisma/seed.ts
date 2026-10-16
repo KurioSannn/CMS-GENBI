@@ -161,8 +161,8 @@ async function main() {
           slug: div.slug,
           tagline: 'Energi untuk Negeri',
           description: div.description,
-          logoUrl: div.image,
-          teamPhotoUrl: div.image,
+          logoUrl: div.logo,
+          teamPhotoUrl: div.logo,
           sortOrder: i + 1,
         },
       });

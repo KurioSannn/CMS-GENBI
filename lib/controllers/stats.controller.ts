@@ -42,7 +42,7 @@ export const statsController = {
         }),
       ]);
 
-      const divisionSummary = divisionsList.map((div) => ({
+      const divisionSummary = divisionsList.map((div: any) => ({
         id: div.id,
         name: div.name,
         slug: div.slug,

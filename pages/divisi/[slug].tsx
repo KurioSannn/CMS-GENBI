@@ -1,9 +1,9 @@
 // pages/divisi/[slug].tsx
-import { GetStaticPaths, GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { genbiDivisions, Division } from '@/data/members';
+import db, { Division } from '@/lib/db';
 import MemberCard from '@/components/MemberCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -63,7 +63,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
           <meta name="description" content={division.description} />
         </Head>
         
-        <Navbar isScrolled={isScrolled} />
+        <Navbar />
         
         <main className="bg-white min-h-screen overflow-hidden">
           {/* Hero Section - Navy Gelap Peat #050B18 */}
@@ -97,7 +97,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
                     <div className="relative w-52 h-52 md:w-64 md:h-64 bg-white rounded-full flex items-center justify-center p-1 shadow-[0_0_60px_rgba(255,255,255,0.1)] border-8 border-white/10 overflow-hidden">
                       <div className="relative w-full h-full rounded-full overflow-hidden">
                         <Image 
-                          src={division.logo} 
+                          src={division.logoUrl || '/bph.png'} 
                           alt={`${division.name} Logo`}
                           fill
                           className="object-cover transition-transform duration-700 hover:scale-110"
@@ -214,17 +214,19 @@ const DivisionPage = ({ division }: { division: Division }) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = genbiDivisions.map((div) => ({ 
-    params: { slug: div.slug } 
-  }));
-  return { paths, fallback: false };
-};
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const slug = params?.slug as string;
+  const division = await db.division.findBySlug(slug);
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const division = genbiDivisions.find((div) => div.slug === params?.slug);
-  if (!division) return { notFound: true };
-  return { props: { division } };
+  if (!division) {
+    return { notFound: true };
+  }
+
+  return {
+    props: {
+      division: JSON.parse(JSON.stringify(division)),
+    },
+  };
 };
 
 export default DivisionPage;

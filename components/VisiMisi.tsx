@@ -69,7 +69,7 @@ const VisiMisi = () => {
 
   const cardVariants = {
     hidden: { opacity: 0, x: -20 },
-    visible: (i) => ({
+    visible: (i: number) => ({
       opacity: 1,
       x: 0,
       transition: {
