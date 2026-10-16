@@ -31,7 +31,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
 
   const banners = allBanners.filter((b) => b.isActive);
   const achievements = allAchievements.slice(0, 6);
-  const articles = allArticles.slice(0, 5);
+  const articles = allArticles.slice(0, 8);
 
   return {
     props: {
@@ -137,7 +137,7 @@ export default function Home({ banners, achievements, articles, divisions }: Hom
         <Prestasi achievements={achievements} />
         <AboutCarousel />
         <VisiMisi />
-        <Kegiatan />
+        <Kegiatan articles={articles} />
         <Struktur divisions={divisions} />
         <CapaianDanTentang />
         <GenBINews articles={articles} />
