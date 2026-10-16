@@ -8,52 +8,17 @@ interface PrestasiProps {
   achievements?: Achievement[];
 }
 
-const defaultAchievements = [
-  {
-    id: 4,
-    title: "1st Winner Duta Millenial Penggerak CBPR",
-    event: "KPw. Bank Indonesia Jawa Timur 2024",
-    image: "/prestasi-1.jpg",
-    badge: "1st Winner",
-    rank: "gold"
-  },
-  {
-    id: 1,
-    title: "Juara 2 QRIS Jelajah Budaya Indonesia",
-    event: "KORWIL Jawa 2025",
-    image: "/prestasi-2.jpg",
-    badge: "2nd Place",
-    rank: "silver"
-  },
-  {
-    id: 2,
-    title: "Juara 2 Konten Cinta Bangga Paham Rupiah",
-    event: "ARFEST 2025",
-    image: "/prestasi-3.jpg",
-    badge: "2nd Place",
-    rank: "silver"
-  },
-  {
-    id: 3,
-    title: "3rd Runner Up Duta CBPR Nasional",
-    event: "Duta Muda 2025",
-    image: "/prestasi-4.jpg",
-    badge: "Runner Up",
-    rank: "bronze"
-  },
-];
-
 const Prestasi = ({ achievements }: PrestasiProps) => {
   const displayAchievements = achievements && achievements.length > 0
     ? achievements.map(a => ({
         id: a.id,
         title: a.title,
         event: a.competition,
-        image: a.imageUrl,
+        image: a.imageUrl || '/prestasi-1.jpg',
         badge: a.badge || a.rank,
         rank: a.rank,
       }))
-    : defaultAchievements;
+    : [];
 
   const getBadgeColor = (rank: string) => {
     switch (rank.toLowerCase()) {
@@ -124,7 +89,12 @@ const Prestasi = ({ achievements }: PrestasiProps) => {
         </div>
 
         {/* GRID PRESTASI */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {displayAchievements.length === 0 ? (
+          <div className="text-center py-16 text-slate-300 font-medium italic bg-white/5 rounded-3xl border border-white/10">
+            Belum ada prestasi yang dipublikasikan.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {displayAchievements.map((item, index) => (
             <motion.div
               key={item.id}
@@ -168,6 +138,7 @@ const Prestasi = ({ achievements }: PrestasiProps) => {
             </motion.div>
           ))}
         </div>
+        )}
       </div>
     </section>
   );

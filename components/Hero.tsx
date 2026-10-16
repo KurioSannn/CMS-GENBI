@@ -11,36 +11,6 @@ interface HeroProps {
   banners?: Banner[];
 }
 
-const defaultSlides = [
-  {
-    id: 1,
-    image: "/carousel-1.jpg",
-    title: "Generasi Baru Indonesia",
-    subtitle: "Energi untuk Negeri",
-    desc: "Komunitas penerima beasiswa Bank Indonesia yang siap menjadi agen perubahan dan pemimpin masa depan.",
-    buttonText: "Jelajahi Kami",
-    buttonUrl: "#tentang-kami",
-  },
-  {
-    id: 2,
-    image: "/corousel-2.jpg",
-    title: "Dedikasi Untuk Negeri",
-    subtitle: "Berkontribusi Nyata",
-    desc: "Mengabdi kepada masyarakat melalui program sosial, pendidikan, dan pengembangan ekonomi kreatif.",
-    buttonText: "Lihat Kegiatan",
-    buttonUrl: "#kegiatan",
-  },
-  {
-    id: 3,
-    image: "/corousel-3.jpg",
-    title: "Frontliner Bank Indonesia",
-    subtitle: "Mengkomunikasikan Kebijakan",
-    desc: "Menjadi garda terdepan dalam menyampaikan kebijakan Bank Indonesia kepada masyarakat luas.",
-    buttonText: "Baca Berita",
-    buttonUrl: "/berita",
-  },
-];
-
 const Hero = ({ banners }: HeroProps) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 }, [
     Autoplay({ delay: 6000, stopOnInteraction: false })
@@ -48,8 +18,8 @@ const Hero = ({ banners }: HeroProps) => {
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const activeBanners = banners?.filter(b => b.isActive);
-  const slides = activeBanners && activeBanners.length > 0
+  const activeBanners = banners?.filter(b => b.isActive) || [];
+  const slides = activeBanners.length > 0
     ? activeBanners.map(b => ({
         id: b.id,
         image: b.imageUrl,
@@ -59,7 +29,17 @@ const Hero = ({ banners }: HeroProps) => {
         buttonText: b.buttonText || "Jelajahi Kami",
         buttonUrl: b.buttonUrl || "#tentang-kami",
       }))
-    : defaultSlides;
+    : [
+        {
+          id: 1,
+          image: "/carousel-1.jpg",
+          title: "Generasi Baru Indonesia",
+          subtitle: "Energi untuk Negeri",
+          desc: "Komunitas penerima beasiswa Bank Indonesia yang siap menjadi agen perubahan dan pemimpin masa depan.",
+          buttonText: "Jelajahi Profil",
+          buttonUrl: "/profil",
+        },
+      ];
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;

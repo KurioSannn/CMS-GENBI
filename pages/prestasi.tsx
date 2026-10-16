@@ -1,11 +1,26 @@
-// pages/prestasi.tsx
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Prestasi from '@/components/Prestasi'; 
 import { motion } from 'framer-motion';
+import db, { Achievement } from '@/lib/db';
 
-export default function PrestasiPage() {
+interface PrestasiPageProps {
+  achievements: Achievement[];
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const achievements = await db.achievement.findMany();
+
+  return {
+    props: {
+      achievements: JSON.parse(JSON.stringify(achievements)),
+    },
+  };
+};
+
+export default function PrestasiPage({ achievements }: PrestasiPageProps) {
   return (
     <>
       <Head>
@@ -47,7 +62,7 @@ export default function PrestasiPage() {
         </section>
 
         {/* Render Komponen Prestasi */}
-        <Prestasi />
+        <Prestasi achievements={achievements} />
         
         {/* Di sini bisa ditambahkan list prestasi lain di masa depan */}
 
