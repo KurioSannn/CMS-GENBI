@@ -76,7 +76,6 @@ export default function AdminLoginPage() {
           {/* Center Elegant Statement */}
           <div className="my-auto py-8 max-w-sm xl:max-w-md space-y-6 relative z-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-200/80 text-xs font-semibold text-slate-600 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-[#0284C7]" />
               <span>Portal Tata Kelola &amp; Informasi Resmi</span>
             </div>
 
@@ -91,13 +90,12 @@ export default function AdminLoginPage() {
             </p>
 
             {/* Community Identity Banner */}
-            <div className="w-fit p-4 rounded-2xl bg-white/95 backdrop-blur-xs border border-slate-200/90 shadow-xs space-y-1 mt-6">
-              <p className="text-xs font-bold text-slate-900">
+            <div className="inline-block max-w-md p-3.5 rounded-2xl bg-white/95 backdrop-blur-xs border border-slate-200/90 shadow-xs mt-6">
+              <p className="text-xs font-bold text-slate-900 mb-0.5">
                 Komisariat UPN &ldquo;Veteran&rdquo; Jawa Timur
               </p>
               <p className="text-xs text-slate-500 font-normal leading-relaxed">
-                Wadah dedikasi &amp; kontribusi nyata mahasiswa penerima <br />
-                Beasiswa Bank Indonesia di UPN &ldquo;Veteran&rdquo; Jawa Timur.
+                Wadah dedikasi &amp; kontribusi nyata mahasiswa penerima Beasiswa Bank Indonesia di UPN &ldquo;Veteran&rdquo; Jawa Timur.
               </p>
             </div>
           </div>

@@ -54,8 +54,8 @@ export default function DetailBerita({ article }: DetailBeritaProps) {
           {/* Back link */}
           <div className="mb-6">
             <Link
-              href="/#genbi-news"
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#0B1F40] transition-colors"
+              href="/#berita"
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#0284C7] transition-colors"
             >
               <ArrowLeft size={16} /> Kembali ke Berita
             </Link>
@@ -63,17 +63,22 @@ export default function DetailBerita({ article }: DetailBeritaProps) {
 
           {/* Article Header */}
           <div className="bg-white rounded-3xl p-6 md:p-10 border border-slate-200 shadow-sm space-y-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="px-3 py-1 bg-[#EAB308] text-[#0B1F40] text-[11px] font-black uppercase rounded-full tracking-wider">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <span className="px-3.5 py-1.5 bg-[#0284C7]/10 text-[#0284C7] text-xs font-bold uppercase rounded-full tracking-wider border border-[#0284C7]/20">
                 {article.category}
               </span>
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <Calendar size={14} className="text-[#EAB308]" />
-                <span>{formatDate(article.publishedAt)}</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                <User size={14} className="text-[#EAB308]" />
-                <span>{article.author}</span>
+
+              {/* Pojok Kanan: Tanggal & Penulis */}
+              <div className="flex items-center gap-3.5 text-xs text-slate-500 font-medium ml-auto">
+                <div className="flex items-center gap-1.5">
+                  <Calendar size={14} className="text-[#0284C7]" />
+                  <span>{formatDate(article.publishedAt)}</span>
+                </div>
+                <span className="text-slate-300">•</span>
+                <div className="flex items-center gap-1.5">
+                  <User size={14} className="text-[#0284C7]" />
+                  <span>{article.author}</span>
+                </div>
               </div>
             </div>
 
@@ -82,7 +87,7 @@ export default function DetailBerita({ article }: DetailBeritaProps) {
             </h1>
 
             {article.excerpt && (
-              <p className="text-slate-600 text-sm md:text-base border-l-4 border-[#EAB308] pl-4 italic bg-slate-50/80 p-3 rounded-r-xl">
+              <p className="text-slate-600 text-sm md:text-base border-l-4 border-[#0284C7] pl-4 italic bg-slate-50/80 p-3 rounded-r-xl">
                 {article.excerpt}
               </p>
             )}

@@ -1,203 +1,284 @@
-  "use client";
+"use client";
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowUpRight, Check, Users, UserCheck } from 'lucide-react';
+import { genbiDivisions } from '@/data/members';
+import type { Division } from '@/lib/db';
 
-  import React from 'react';
-  import { motion } from 'framer-motion';
-  import Link from 'next/link';
-  import Image from 'next/image';
-  import { genbiDivisions } from '@/data/members';
-  import { Sparkles, ChevronRight, MoveRight } from 'lucide-react';
+interface StrukturProps {
+  divisions?: Division[];
+}
 
-  // --- SWIPER IMPORTS ---
-  import { Swiper, SwiperSlide } from 'swiper/react';
-  import { FreeMode, Mousewheel, Pagination, A11y } from 'swiper/modules';
+const defaultDivisionsData = [
+  {
+    id: 1,
+    num: "01",
+    name: "Badan Pengurus Harian (BPH)",
+    slug: "bph",
+    logo: "/bph.png",
+    teamPhoto: "/BPH ALL TEAM.png",
+    tagline: "Tata Kelola Strategis, Integritas & Diplomasi Lembaga",
+    desc: "Memimpin komando organisasi, koordinasi lintas departemen, serta menjaga hubungan diplomasi formal bersama KPw Bank Indonesia Jawa Timur dan pimpinan rektorat UPNVJT.",
+    headTitle: "Ketua & Wakil Komisariat",
+    membersCount: 5,
+    prokerPreview: [
+      "Pleno Rapat Kerja Tahunan Organisasi",
+      "Monitoring & Evaluasi Kinerja Semester",
+      "Diplomasi Formal Lembaga Bank Indonesia",
+      "Manajemen Akuntabilitas Anggaran",
+    ],
+  },
+  {
+    id: 2,
+    num: "02",
+    name: "Pendidikan",
+    slug: "pendidikan",
+    logo: "/Pendidikan.png",
+    teamPhoto: "/Pendidikan ALL TEAM.png",
+    tagline: "Edukasi Beasiswa, Literasi CBP Rupiah & Kapasitas Akademis",
+    desc: "Pusat pengembangan intelektual awardee, inisiator bimbingan intensif seleksi Beasiswa Bank Indonesia, sosialisasi Cinta Bangga Paham Rupiah, dan pelatihan kapasitas bahasa.",
+    headTitle: "Kepala Divisi Pendidikan",
+    membersCount: 8,
+    prokerPreview: [
+      "Future Scholar Talk & Mentoring Beasiswa",
+      "GenBI EPT Masterclass Preparation",
+      "GenBI SHINE Literasi CBP Rupiah",
+      "Klinik Konsultasi Portofolio Mahasiswa",
+    ],
+  },
+  {
+    id: 3,
+    num: "03",
+    name: "Ekonomi Kreatif (EKRAF)",
+    slug: "ekraf",
+    logo: "/Ekraf.png",
+    teamPhoto: "/EKRAF ALL TEAM.png",
+    tagline: "Akselerasi Ekonomi Kreatif & Digitalisasi QRIS UMKM",
+    desc: "Mendorong adopsi pembayaran digital nirsentuh melalui QRIS bagi pedagang mikro sentra kuliner Surabaya serta inkubasi bisnis rintisan mandiri bagi anggota GenBI.",
+    headTitle: "Kepala Divisi EKRAF",
+    membersCount: 7,
+    prokerPreview: [
+      "GenBI SCALE: Akselerasi Digitalisasi UMKM",
+      "Mentoring Penyusunan Business Plan",
+      "Pameran Produk Kreatif & Bazar Mahasiswa",
+      "GenBI Official Merchandising",
+    ],
+  },
+  {
+    id: 4,
+    num: "04",
+    name: "Sosial Lingkungan (SOSLING)",
+    slug: "sosling",
+    logo: "/SOSLING.png",
+    teamPhoto: "/SOSLING ALL TEAM.png",
+    tagline: "Konservasi Hayati, Penanaman Pohon & Aksi Peduli Bumi",
+    desc: "Pelopor kesadaran lingkungan hidup, kampanye pengurangan emisi karbon dan plastik sekali pakai, program reboisasi sekolah adiwiyata, serta pengelolaan sampah terpadu.",
+    headTitle: "Kepala Divisi SOSLING",
+    membersCount: 7,
+    prokerPreview: [
+      "GenBI Planters: Reboisasi Pohon Sekolah",
+      "Kampanye Zero Waste Lifestyle",
+      "Edukasi Pemilahan Sampah Organik",
+      "Aksi Bersih Pantai & Konservasi Pesisir",
+    ],
+  },
+  {
+    id: 5,
+    num: "05",
+    name: "Hubungan Eksternal (HUBEKS)",
+    slug: "hubeks",
+    logo: "/HUBEKS.png",
+    teamPhoto: "/HUBEKS ALL TEAM.png",
+    tagline: "Jejaring Kemitraan Strategis, Relasi Publik & Diplomasi",
+    desc: "Membangun kemitraan eksternal bersama instansi pemerintah, media massa, korporasi mitra, serta komunitas kemahasiswaan se-Jawa Timur.",
+    headTitle: "Kepala Divisi HUBEKS",
+    membersCount: 7,
+    prokerPreview: [
+      "GenBI Visit & Company Knowledge Exchange",
+      "Sinergi Kemitraan Media Publikasi",
+      "Forum Koordinasi GenBI Wilayah Jatim",
+      "Studi Banding Antar-Komisariat Kampus",
+    ],
+  },
+  {
+    id: 6,
+    num: "06",
+    name: "PSDM",
+    slug: "psdm",
+    logo: "/PSDM.png",
+    teamPhoto: "/PSDM ALL TEAM.png",
+    tagline: "Kaderisasi Karakter Bela Negara, Solidaritas & Internal Bonding",
+    desc: "Kawah candradimuka pembinaan internal, upgrading soft-skills, pelatihan karakter kepemimpinan Bela Negara, dan evaluasi kepuasan anggota organisasi.",
+    headTitle: "Kepala Divisi PSDM",
+    membersCount: 6,
+    prokerPreview: [
+      "Leadership Training & Karakter Bela Negara",
+      "Upgrading Soft-Skills & Public Speaking",
+      "Internal Bonding & Gathering Anggota",
+      "Apresiasi Awardee Berprestasi Semester",
+    ],
+  },
+  {
+    id: 7,
+    num: "07",
+    name: "Media & Komunikasi (MEDKOM)",
+    slug: "medkom",
+    logo: "/Medkom.png",
+    teamPhoto: "/Medkom ALL TEAM.png",
+    tagline: "Branding Institusi, Desain Visual & Pengelolaan Media",
+    desc: "Ujung tombak visual dan komunikasi publik GenBI UPNVJT di platform digital. Memproduksi konten infografis kebijakan moneter, video dokumenter, dan majalah organisasi.",
+    headTitle: "Kepala Divisi MEDKOM",
+    membersCount: 7,
+    prokerPreview: [
+      "Produksi Konten Edukasi CBP & QRIS",
+      "Manajemen Media Sosial Instagram & TikTok",
+      "Dokumentasi Foto & Video Kegiatan",
+      "Pengelolaan Portal Berita GenBI-Hub",
+    ],
+  },
+];
 
-  // Import Swiper styles
-  import 'swiper/css';
-  import 'swiper/css/free-mode';
-  import 'swiper/css/pagination';
+const Struktur: React.FC<StrukturProps> = ({ divisions }) => {
+  const [activeSlug, setActiveSlug] = useState('bph');
 
-  // PASTIKAN BARIS INI ADA:
-  const Struktur = () => {
-    // FIX: Tipe data harus dikunci dengan 'as const' agar Vercel tidak error
-const smoothSpring: any = {
-  type: "spring",
-  stiffness: 40,
-  damping: 12,
-  mass: 0.8
-};
+  const current = defaultDivisionsData.find(d => d.slug === activeSlug) || defaultDivisionsData[0];
+  const fullDivData = genbiDivisions.find(d => d.slug === current.slug);
+  const totalMembers = fullDivData?.members.length || current.membersCount;
 
-    const perspectiveStyle = { perspective: "2000px" };
-    const backfaceStyle = { 
-      backfaceVisibility: "hidden" as const,
-      WebkitBackfaceVisibility: "hidden" as const,
-    };
+  return (
+    <section id="struktur-organisasi" className="py-24 sm:py-32 bg-[#050C18] text-white border-b border-white/5 relative overflow-hidden">
+      
+      {/* Background Graphic Vignette */}
+      <div className="absolute inset-0 bg-[radial-gradient(#1e3a8a_1px,transparent_1px)] [background-size:32px_32px] opacity-15 pointer-events-none" />
+      <div className="absolute top-1/4 right-1/4 w-[600px] h-[400px] bg-[#0284C7]/10 rounded-full blur-[140px] pointer-events-none" />
 
-    return (
-      <section id="struktur-organisasi" className="relative py-28 md:py-36 bg-[#030712] overflow-hidden">
+      <div className="container mx-auto px-6 sm:px-12 max-w-7xl relative z-10 space-y-12 sm:space-y-14">
         
-        {/* 1. FLUID BACKGROUND */}
-        <div className="absolute inset-0 pointer-events-none">
-          <motion.div 
-            animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
-            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-24 -left-24 w-[600px] h-[600px] bg-yellow-600/5 rounded-full blur-[150px]" 
-          />
+        {/* Section Header: Strictly 2 Lines Without Double Periods */}
+        <div className="max-w-3xl mx-auto text-center space-y-3">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            <span className="block">Struktur kepengurusan</span>
+            <span className="block mt-1 text-[#FCD34D]">
+              Energi penggerak aksi nyata.
+            </span>
+          </h2>
+
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal pt-1 max-w-2xl mx-auto">
+            Sinergi 7 departemen kepengurusan GenBI UPN &quot;Veteran&quot; Jawa Timur dalam mengemban amanat kebanksentralan dan dedikasi pengabdian masyarakat.
+          </p>
+
+          {/* Clean 7-Department Pill Switcher (Minimalist & Executive) */}
+          <div className="pt-6 flex flex-wrap items-center justify-center gap-2.5">
+            {defaultDivisionsData.map((d) => {
+              const isActive = d.slug === activeSlug;
+              return (
+                <button
+                  key={d.slug}
+                  onClick={() => setActiveSlug(d.slug)}
+                  className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold tracking-wide transition-all duration-300 cursor-pointer flex items-center gap-2 ${
+                    isActive
+                      ? 'bg-[#0284C7] text-white shadow-lg shadow-sky-600/30 ring-1 ring-sky-300/40'
+                      : 'bg-white/[0.05] text-slate-300 hover:bg-white/10 hover:text-white border border-white/10'
+                  }`}
+                >
+                  <div className="w-6 h-6 rounded-full bg-white p-1 shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="relative w-full h-full">
+                      <Image src={d.logo} alt={d.name} fill className="object-contain" />
+                    </div>
+                  </div>
+                  <span>{d.slug.toUpperCase()}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-        
-        <div className="container mx-auto px-4 relative z-10 max-w-[1500px]">
+
+        {/* Seamless Showcase Stage (Pure Luxury, Zero Clutter) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center pt-2">
           
-          {/* 2. HEADER */}
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-24 gap-10 px-6">
-            <div className="max-w-3xl text-left">
-              <motion.div 
-                initial={{ opacity: 0, x: -30 }} 
-                whileInView={{ opacity: 1, x: 0 }} 
-                transition={smoothSpring}
-                className="flex items-center gap-4 mb-6"
-              >
-                <div className="h-[1px] w-16 bg-gradient-to-r from-yellow-500 to-transparent" />
-                <span className="text-yellow-500/80 font-bold text-[10px] uppercase tracking-[0.5em] italic">Departemen GenBI 2025/2026</span>
-              </motion.div>
-              <motion.h2 
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ ...smoothSpring, delay: 0.1 }}
-                className="text-6xl md:text-8xl font-black text-white tracking-tighter leading-[0.9] italic"
-              >
-                Structure <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-yellow-500 to-amber-600">Of Excellence.</span>
-              </motion.h2>
+          {/* Left Column (7 Cols): Cinematic Full Team Photo */}
+          <div className="lg:col-span-7">
+            <div className="relative h-80 sm:h-[440px] w-full rounded-2xl overflow-hidden shadow-2xl border border-white/12 bg-[#071328] group">
+              <Image
+                src={current.teamPhoto}
+                alt={`Foto Tim Resmi ${current.name}`}
+                fill
+                priority
+                className="object-cover object-center brightness-95 group-hover:scale-105 transition-transform duration-700 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050C18] via-[#050C18]/20 to-transparent" />
+              
+              {/* Clean Bottom Overlay */}
+              <div className="absolute bottom-6 left-6 right-6 text-white space-y-1">
+                <span className="text-xs font-mono font-bold text-[#FCD34D] tracking-wider uppercase block">
+                  Foto Resmi Kepengurusan
+                </span>
+                <p className="text-base sm:text-lg font-bold text-slate-100 leading-snug">
+                  {current.tagline}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column (5 Cols): Clean Department Profile & Focus */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="space-y-3">
+              <h3 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-snug">
+                {current.name}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                {current.desc}
+              </p>
             </div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ ...smoothSpring, delay: 0.2 }}
-              className="flex flex-col items-start lg:items-end gap-6"
-            >
-              <p className="text-slate-400 text-lg lg:text-right max-w-sm font-light leading-relaxed italic">Harmonisasi gerak dalam tujuh wadah departemen strategis.</p>
-              <div className="flex items-center gap-4 text-white/20">
-                <span className="text-[10px] font-black tracking-widest uppercase italic">Scroll to explore</span>
-                <MoveRight size={20} className="animate-pulse" />
+            {/* Leadership & Strength Strip */}
+            <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-white/[0.04] border border-white/10 text-xs">
+              <div className="space-y-1">
+                <span className="text-[11px] text-slate-400 font-mono block">Pimpinan</span>
+                <span className="font-bold text-white text-sm block">{current.headTitle}</span>
               </div>
-            </motion.div>
+              <div className="space-y-1">
+                <span className="text-[11px] text-slate-400 font-mono block">Kekuatan Tim</span>
+                <span className="font-bold text-[#FCD34D] text-sm block">{totalMembers} Anggota Aktif</span>
+              </div>
+            </div>
+
+            {/* Key Focus Initiatives */}
+            <div className="space-y-2.5">
+              <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider block">
+                Fokus Agenda Kerja
+              </span>
+              <div className="space-y-2">
+                {current.prokerPreview.slice(0, 3).map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-200">
+                    <span className="w-4 h-4 rounded-full bg-[#0284C7]/20 border border-[#0284C7]/40 flex items-center justify-center shrink-0">
+                      <Check size={10} className="text-sky-300" />
+                    </span>
+                    <span className="font-medium leading-relaxed">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Clean Action Button */}
+            <div className="pt-2">
+              <Link
+                href="/divisi"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-[#0284C7] hover:bg-[#0369A1] text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-sky-950/40 transition-all transform hover:-translate-y-0.5 active:scale-95"
+              >
+                <span>Direktori Lengkap Seluruh Anggota</span>
+                <ArrowUpRight size={15} />
+              </Link>
+            </div>
+
           </div>
 
-          {/* 3. FLUID SWIPER CAROUSEL */}
-          <div className="relative overflow-visible px-4">
-            <Swiper
-              modules={[FreeMode, Mousewheel, Pagination, A11y]}
-              freeMode={{ enabled: true, momentum: true }}
-              grabCursor={true}
-              mousewheel={{ forceToAxis: true }}
-              spaceBetween={30}
-              slidesPerView={1.15}
-              breakpoints={{ 
-                640: { slidesPerView: 2.3 }, 
-                1024: { slidesPerView: 3.3 }, 
-                1280: { slidesPerView: 4.3 } 
-              }}
-              pagination={{ clickable: true, dynamicBullets: true }}
-              className="!pb-32 !pt-10 overflow-visible"
-            >
-              {genbiDivisions.map((division, idx) => (
-                <SwiperSlide key={division.slug} className="!h-auto !overflow-visible" style={{ ...perspectiveStyle, transformStyle: 'preserve-3d' }}>
-                  <motion.div 
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ ...smoothSpring, delay: idx * 0.05 }}
-                    className="relative h-[500px] w-full group select-none"
-                    style={{ transformStyle: "preserve-3d" }}
-                    whileHover={{ rotateY: 180 }}
-                  >
-                    
-                    {/* FRONT SIDE (LOGO BI) */}
-                    <div 
-                      className="absolute inset-0 w-full h-full bg-[#0F172A] border border-white/10 rounded-[3rem] p-10 flex flex-col shadow-2xl transition-all duration-700 group-hover:border-yellow-500/30" 
-                      style={{ 
-                        backfaceVisibility: "hidden",
-                        WebkitBackfaceVisibility: "hidden",
-                        transformStyle: "preserve-3d" 
-                      }}
-                    >
-                      <div className="flex justify-between items-start mb-16">
-                        <div className="w-14 h-14 bg-gradient-to-tr from-yellow-500 to-amber-700 rounded-2xl flex items-center justify-center p-2">
-                          <Image 
-                            src="/BI.png" 
-                            alt="Logo BI" 
-                            width={40} 
-                            height={40} 
-                            className="object-contain" 
-                          />
-                        </div>
-                        <Sparkles size={20} className="text-yellow-500/20" />
-                      </div>
-                      <h3 className="text-3xl font-bold text-white mb-4 tracking-tight italic text-left">{division.name}</h3>
-                      <p className="text-slate-400 text-sm leading-relaxed font-light line-clamp-4 mb-8 italic text-left">{division.description}</p>
-                      <div className="mt-auto flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">{division.members.length} Talenta</span>
-                      </div>
-                    </div>
-
-                    {/* BACK SIDE (LOGO DIVISI) */}
-                    <div 
-                      className="absolute inset-0 w-full h-full bg-gradient-to-br from-[#0B1F40] to-[#030712] border border-yellow-500/40 rounded-[3rem] flex flex-col items-center justify-center p-12 text-center shadow-2xl" 
-                      style={{ 
-                        transform: "rotateY(180deg)",
-                        backfaceVisibility: "hidden",
-                        WebkitBackfaceVisibility: "hidden",
-                        transformStyle: "preserve-3d" 
-                      }}
-                    >
-                      <div className="w-32 h-32 bg-white rounded-[3rem] flex items-center justify-center p-6 mb-10 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden relative border-4 border-white/20">
-                        <Image 
-                          src={division.logo} 
-                          alt={`${division.name} logo`} 
-                          fill 
-                          className="p-6 object-contain" 
-                          sizes="128px"
-                        />
-                      </div>
-                      
-                      <div className="space-y-2 mb-10">
-                        <h4 className="text-xl font-black text-white tracking-[0.1em] uppercase italic">GenBI UPNVJT</h4>
-                        <p className="text-yellow-500/60 text-[10px] font-bold uppercase tracking-[0.3em] italic text-center">Pimpin, Inspirasi, Berikan Dampak!</p>
-                      </div>
-                      
-                      <Link 
-                        href={`/divisi/${division.slug}`} 
-                        prefetch={true} 
-                        className="group/btn relative px-8 py-4 w-full overflow-hidden rounded-2xl bg-[#EAB308] transition-all duration-300"
-                      >
-                        <div className="absolute inset-0 bg-white translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300" />
-                        <span className="relative z-10 text-[#0B1F40] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 italic">
-                          Eksplorasi <ChevronRight size={14} />
-                        </span>
-                      </Link>
-                    </div>
-                  </motion.div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
         </div>
 
-        <style jsx global>{`
-          .swiper-pagination-bullet { 
-            background-color: rgba(255, 255, 255, 0.05) !important; 
-            width: 6px; 
-            height: 6px; 
-            transition: all 0.6s; 
-          }
-          .swiper-pagination-bullet-active { 
-            background-color: #EAB308 !important; 
-            width: 40px; 
-            border-radius: 20px; 
-            box-shadow: 0 0 20px rgba(234, 179, 8, 0.3); 
-          }
-        `}</style>
-      </section>
-    );
-  };
+      </div>
+    </section>
+  );
+};
 
-  export default Struktur;
+export default Struktur;

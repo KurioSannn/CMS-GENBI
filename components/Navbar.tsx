@@ -1,148 +1,228 @@
 "use client";
-import { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Newspaper, Home, User, Target, Grid, LayoutGrid, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { 
+  ArrowUpRight, 
+  Menu, 
+  X, 
+  ChevronDown, 
+  Trophy, 
+  Zap, 
+  Calendar, 
+  Newspaper 
+} from 'lucide-react';
 
-const Navbar = () => {
+interface NavbarProps {
+  isScrolled?: boolean;
+}
+
+const Navbar: React.FC<NavbarProps> = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isActivitiesOpen, setIsActivitiesOpen] = useState(false);
+  const dropdownTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const { scrollY } = useScroll();
 
-  const headerBg = useTransform(scrollY, [0, 50], ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.9)"]);
-  const headerBlur = useTransform(scrollY, [0, 50], ["blur(0px)", "blur(20px)"]);
-  const navHeight = useTransform(scrollY, [0, 50], ["100px", "70px"]);
-  const shadowOpacity = useTransform(scrollY, [0, 50], ["0px 0px 0px rgba(0,0,0,0)", "0px 10px 30px rgba(0,0,0,0.05)"]);
-  const textColor = useTransform(scrollY, [0, 50], ["#FFFFFF", "#0B1F40"]);
+  const headerBg = useTransform(scrollY, [0, 40], ["rgba(255, 255, 255, 0.95)", "rgba(255, 255, 255, 0.98)"]);
+  const headerBlur = useTransform(scrollY, [0, 40], ["blur(12px)", "blur(20px)"]);
+  const navHeight = useTransform(scrollY, [0, 40], ["78px", "68px"]);
+  const shadowValue = useTransform(scrollY, [0, 40], ["0 1px 2px rgba(0,0,0,0.03)", "0 4px 20px rgba(7,18,36,0.06)"]);
 
-  const [isScrolled, setIsScrolled] = useState(false);
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 50);
-  });
+  const handleMouseEnter = () => {
+    if (dropdownTimeoutRef.current) clearTimeout(dropdownTimeoutRef.current);
+    setIsActivitiesOpen(true);
+  };
 
-  // NavLinks yang sudah disesuaikan dengan sitemap dan page baru
-  const navLinks = [
-    { href: "/", label: "BERANDA", icon: <Home size={20} /> },
-    { href: "/profil", label: "PROFIL", icon: <User size={20} /> },
-    { href: "/#visi&misi", label: "VISI & MISI", icon: <Target size={20} /> },
-    { href: "/#program-divisi", label: "PROGRAM", icon: <Grid size={20} /> },
-    { href: "/#struktur-organisasi", label: "STRUKTUR", icon: <LayoutGrid size={20} /> },
-    // Link News sudah diarahkan ke halaman /news secara permanen
-    { href: "/news", label: "GENBI NEWS", isSpecial: true, icon: <Newspaper size={20} /> }, 
+  const handleMouseLeave = () => {
+    dropdownTimeoutRef.current = setTimeout(() => {
+      setIsActivitiesOpen(false);
+    }, 150);
+  };
+
+  const activities = [
+    { title: "Prestasi", href: "/#prestasi", icon: Trophy },
+    { title: "Program Kerja", href: "/#program-kerja", icon: Calendar },
+    { title: "3 Pilar Mandat", href: "/#visi-misi", icon: Zap },
+    { title: "Warta Redaksi", href: "/berita", icon: Newspaper },
   ];
-
-  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
 
   return (
     <>
-      <motion.header 
-        style={{ 
-          backgroundColor: headerBg, 
-          backdropFilter: headerBlur, 
+      <motion.header
+        style={{
+          backgroundColor: headerBg,
+          backdropFilter: headerBlur,
           height: navHeight,
-          boxShadow: shadowOpacity 
+          boxShadow: shadowValue,
         }}
-        className="fixed top-0 left-0 w-full z-[100] flex items-center transition-none border-b border-transparent"
+        className="fixed top-0 left-0 w-full z-[100] flex items-center border-b border-slate-200/80 transition-none"
       >
-        <div className="container mx-auto px-8 flex justify-between items-center">
+        <div className="container mx-auto px-6 sm:px-12 max-w-7xl flex justify-between items-center">
           
-          <Link href="/" className="flex items-center gap-4 group relative z-[110]">
-            <div className="relative w-12 h-12 transition-transform duration-500 group-hover:scale-110">
-              <Image src="/LogoBI.png" alt="Logo" fill className="object-contain" priority />
+          {/* Logo & Clean Title */}
+          <Link href="/" className="flex items-center gap-3.5 group">
+            <div className="relative w-9 h-9 transition-transform duration-300 group-hover:scale-105">
+              <Image 
+                src="/LogoBI.png" 
+                alt="Bank Indonesia Logo" 
+                fill 
+                className="object-contain" 
+                priority 
+              />
             </div>
-            <motion.div style={{ color: textColor }} className="flex flex-col">
-              <span className="font-black text-2xl tracking-tighter uppercase leading-none">GENBI</span>
-              <span className="text-[10px] font-black tracking-[0.4em] uppercase text-[#EAB308]">UPNVJT</span>
-            </motion.div>
+            
+            <div className="h-6 w-px bg-slate-300 hidden sm:block" />
+
+            <div className="flex items-center">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-[#071224] leading-none">
+                GenBI <span className="text-[#0284C7]">UPNVJT</span>
+              </span>
+            </div>
           </Link>
-          
-          <nav className="hidden lg:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <motion.div key={link.label} style={{ color: link.isSpecial ? "#0B1F40" : textColor }} className="relative">
-                <Link 
-                  href={link.href} 
-                  className={`relative group flex items-center gap-2 transition-all duration-300 ${
-                    link.isSpecial 
-                    ? 'px-6 py-2 bg-[#EAB308] rounded-full shadow-lg hover:bg-[#0B1F40] hover:text-white' 
-                    : ''
-                  }`}
-                  onMouseEnter={() => setHoveredLink(link.label)}
-                  onMouseLeave={() => setHoveredLink(null)}
-                >
-                  <motion.span 
-                    className="italic font-black text-[11px] uppercase tracking-[0.15em] relative z-10 whitespace-nowrap leading-none"
-                    animate={{
-                      color: hoveredLink === link.label 
-                        ? (link.isSpecial ? '#FFFFFF' : '#EAB308')
-                        : (link.isSpecial ? '#0B1F40' : textColor.get())
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {link.label}
-                  </motion.span>
-                  
-                  {link.isSpecial && (
-                    <motion.div animate={{ color: hoveredLink === link.label ? '#FFFFFF' : '#0B1F40' }} transition={{ duration: 0.3 }}>
-                      <Newspaper size={14} className="relative z-10" />
-                    </motion.div>
-                  )}
-                  
-                  {!link.isSpecial && (
-                    <motion.div 
-                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#EAB308] rounded-full"
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: hoveredLink === link.label ? 1 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  )}
-                </Link>
-              </motion.div>
-            ))}
+
+          {/* Desktop Navigation Links - Nogogeni Style (Compact & Spacious) */}
+          <nav className="hidden lg:flex items-center gap-8 xl:gap-10">
+            
+            <Link
+              href="/#beranda"
+              className="text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#071224] transition-colors py-2 relative group"
+            >
+              <span>Beranda</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#0284C7] transition-all duration-300 group-hover:w-full" />
+            </Link>
+
+            <Link
+              href="/tentang"
+              className="text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#071224] transition-colors py-2 relative group"
+            >
+              <span>Tentang Kami</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#0284C7] transition-all duration-300 group-hover:w-full" />
+            </Link>
+
+            <Link
+              href="/#prestasi"
+              className="text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#071224] transition-colors py-2 relative group"
+            >
+              <span>Prestasi</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#0284C7] transition-all duration-300 group-hover:w-full" />
+            </Link>
+
+            <Link
+              href="/berita"
+              className="text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#071224] transition-colors py-2 relative group"
+            >
+              <span>Warta Berita</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#0284C7] transition-all duration-300 group-hover:w-full" />
+            </Link>
+
+            <Link
+              href="/#beasiswa-faq"
+              className="text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#071224] transition-colors py-2 relative group"
+            >
+              <span>Panduan Beasiswa</span>
+              <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#0284C7] transition-all duration-300 group-hover:w-full" />
+            </Link>
+
           </nav>
 
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)} 
-            className="lg:hidden relative z-[110] w-12 h-12 flex flex-col justify-center items-center rounded-xl bg-[#0B1F40] shadow-xl active:scale-90 transition-transform"
+          {/* Action Button: Portal CMS */}
+          <div className="hidden sm:flex items-center gap-3">
+            <Link
+              href="/admin/login"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#071224] hover:bg-[#0284C7] text-white text-xs font-bold uppercase tracking-wider transition-all shadow-sm active:scale-95"
+            >
+              <span>Portal CMS</span>
+              <ArrowUpRight size={13} />
+            </Link>
+          </div>
+
+          {/* Mobile Hamburger Trigger */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="lg:hidden p-2 text-slate-700 hover:text-black focus:outline-none"
+            aria-label="Toggle Menu"
           >
-            <motion.div className="relative w-6 h-5 flex flex-col justify-between items-center" animate={{ color: isMenuOpen ? '#FFFFFF' : '#EAB308' }}>
-              <motion.span animate={{ rotate: isMenuOpen ? 45 : 0, y: isMenuOpen ? 9 : 0, backgroundColor: isMenuOpen ? '#FFFFFF' : '#EAB308' }} className="w-6 h-[3px] rounded-full" />
-              <motion.span animate={{ opacity: isMenuOpen ? 0 : 1, x: isMenuOpen ? 20 : 0, backgroundColor: isMenuOpen ? '#FFFFFF' : '#EAB308' }} className="w-6 h-[3px] rounded-full" />
-              <motion.span animate={{ rotate: isMenuOpen ? -45 : 0, y: isMenuOpen ? -9 : 0, backgroundColor: isMenuOpen ? '#FFFFFF' : '#EAB308' }} className="w-6 h-[3px] rounded-full" />
-            </motion.div>
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
+
         </div>
       </motion.header>
 
+      {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            initial={{ y: "-100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "-100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 250 }}
-            className="fixed inset-0 z-[90] bg-[#0B1F40] lg:hidden flex flex-col pt-32 px-8"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="fixed top-0 left-0 w-full h-screen bg-white/98 backdrop-blur-xl z-[90] flex flex-col justify-center px-8 lg:hidden overflow-y-auto"
           >
-            <nav className="relative z-10 space-y-3">
-              {navLinks.map((link, idx) => (
-                <motion.div key={link.label} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + (idx * 0.05) }}>
-                  <Link 
-                    href={link.href} 
-                    onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center justify-between p-6 rounded-[2rem] border transition-all duration-300 relative group ${
-                      link.isSpecial ? 'bg-[#EAB308] border-[#EAB308] text-[#0B1F40]' : 'bg-white/5 border-white/10 text-white'
-                    }`}
-                  >
-                    <div className="flex items-center gap-4 font-black italic uppercase tracking-tight text-lg relative z-10">
-                      <div className={`p-2 rounded-xl ${link.isSpecial ? 'bg-[#0B1F40]/10 text-[#0B1F40]' : 'bg-white/10 text-[#EAB308]'}`}>
-                        {link.icon}
-                      </div>
-                      <span>{link.label}</span>
-                    </div>
-                    <ChevronRight size={20} className={link.isSpecial ? 'text-[#0B1F40]' : 'text-[#EAB308]'} />
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
+            <div className="space-y-6 max-w-sm mx-auto w-full py-12">
+              <div className="border-b border-slate-200 pb-4">
+                <span className="font-extrabold text-xl tracking-tight text-[#071224]">
+                  GenBI <span className="text-[#0284C7]">UPNVJT</span>
+                </span>
+              </div>
+
+              <div className="flex flex-col space-y-4">
+                <Link
+                  href="/#beranda"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-base font-bold uppercase tracking-wider text-slate-800 hover:text-[#0284C7]"
+                >
+                  Beranda
+                </Link>
+                <Link
+                  href="/tentang"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-base font-bold uppercase tracking-wider text-slate-800 hover:text-[#0284C7]"
+                >
+                  Tentang Kami
+                </Link>
+                <Link
+                  href="/#prestasi"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-base font-bold uppercase tracking-wider text-slate-800 hover:text-[#0284C7]"
+                >
+                  Prestasi
+                </Link>
+                <Link
+                  href="/#visi-misi"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-base font-bold uppercase tracking-wider text-slate-800 hover:text-[#0284C7]"
+                >
+                  3 Pilar Mandat
+                </Link>
+                <Link
+                  href="/berita"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-base font-bold uppercase tracking-wider text-slate-800 hover:text-[#0284C7]"
+                >
+                  Warta Berita
+                </Link>
+                <Link
+                  href="/#beasiswa-faq"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-base font-bold uppercase tracking-wider text-slate-800 hover:text-[#0284C7]"
+                >
+                  Panduan Beasiswa
+                </Link>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200">
+                <Link
+                  href="/admin/login"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#071224] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#0284C7] transition-colors"
+                >
+                  <span>Akses Portal CMS</span>
+                  <ArrowUpRight size={14} />
+                </Link>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,196 +1,207 @@
 "use client";
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Mail, Instagram, MapPin, MessageCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { 
+  ArrowRight, 
+  ArrowUpRight, 
+  ChevronDown
+} from 'lucide-react';
+
+const criteria = [
+  {
+    num: "01",
+    tag: "SYARAT SEMESTER",
+    title: "Mahasiswa Semester 3 & 5",
+    desc: "Terdaftar aktif jenjang Sarjana (S1) di lingkungan kampus UPN \"Veteran\" Jawa Timur pada fakultas yang ditentukan.",
+  },
+  {
+    num: "02",
+    tag: "PRESTASI AKADEMIK",
+    title: "Standar IPK ≥ 3.00",
+    desc: "Memiliki prestasi akademis yang konsisten dan tidak sedang menerima ikatan beasiswa dari instansi lain.",
+  },
+  {
+    num: "03",
+    tag: "KOMITMEN & KARAKTER",
+    title: "Jiwa Kepemimpinan Bela Negara",
+    desc: "Aktif dalam kepanitiaan/organisasi dan bersedia mendedikasikan waktu dalam program pengabdian masyarakat Bank Indonesia.",
+  },
+];
 
 const faqs = [
   {
-    question: "Apa saja syarat utama pendaftaran Beasiswa Bank Indonesia?",
-    answer: "Syarat utama meliputi mahasiswa aktif minimal semester 3, IPK minimal 3.00 (skala 4.00), tidak sedang menerima beasiswa lain, serta aktif dalam organisasi atau kegiatan sosial."
+    num: "01",
+    question: "Apa syarat utama pendaftaran Beasiswa Bank Indonesia di UPNVJT?",
+    answer: "Syarat utama meliputi mahasiswa aktif jenjang Sarjana (S1) minimal semester 3 atau 5, telah menyelesaikan minimal 40 SKS, memiliki Indeks Prestasi Kumulatif (IPK) minimal 3.00 (skala 4.00), tidak sedang menerima beasiswa dari lembaga lain, serta aktif dalam kegiatan organisasi kemahasiswaan atau kepanitiaan sosial.",
   },
   {
-    question: "Apa peran utama komunitas GenBI bagi mahasiswa?",
-    answer: "GenBI berperan sebagai Front Liners (mengomunikasikan kebijakan BI), Change Agents (agen perubahan), dan Future Leaders (calon pemimpin masa depan)."
-  },
-  {
-    question: "Kapan pendaftaran periode 2026/2027 dibuka?",
-    answer: "Saat ini pendaftaran belum dibuka. Mohon pantau terus akun Instagram resmi kami untuk informasi tanggal pendaftaran dan timeline seleksi terbaru."
-  },
-  {
-    question: "Apakah mahasiswa semester akhir masih boleh mendaftar?",
-    answer: "Batas pendaftaran biasanya adalah mahasiswa yang masih memiliki masa studi aktif minimal satu tahun atau tidak sedang menempuh semester akhir saat masa beasiswa berjalan."
-  },
-  {
+    num: "02",
     question: "Apa saja tahapan seleksi Beasiswa Bank Indonesia?",
-    answer: "Tahapan seleksi terdiri dari seleksi administrasi (berkas), seleksi wawancara oleh pihak Bank Indonesia, dan pengumuman akhir."
-  }
+    answer: "Tahapan seleksi terdiri dari 2 fase utama: Tahap 1 Administrasi dan Berkas (pemberkasan form A1, esai motivasi, surat rekomendasi, dan transkrip nilai) yang disaring oleh pihak universitas/kemahasiswaan; dan Tahap 2 Wawancara Tatap Muka langsung bersama tim penilai dari Kantor Perwakilan Bank Indonesia Provinsi Jawa Timur.",
+  },
+  {
+    num: "03",
+    question: "Apa hak dan kewajiban setelah dinyatakan lolos menjadi awardee GenBI?",
+    answer: "Awardee berhak menerima dana beasiswa penuh sesuai ketentuan Bank Indonesia per semester serta pembinaan kapasitas kepemimpinan. Sebagai kewajiban, penerima beasiswa otomatis tergabung dalam komunitas GenBI UPNVJT dan wajib berpartisipasi aktif dalam program kerja divisi untuk mengedukasi masyarakat.",
+  },
+  {
+    num: "04",
+    question: "Bagaimana cara mendapatkan bimbingan atau tips seleksi dari GenBI UPNVJT?",
+    answer: "Setiap menjelang pembukaan rekrutmen beasiswa, Divisi Pendidikan GenBI UPNVJT menyelenggarakan webinar Future Scholar Talk dan klinik bedah esai beasiswa secara gratis untuk mendampingi calon pendaftar.",
+  },
+  {
+    num: "05",
+    question: "Apakah mahasiswa penerima beasiswa instansi lain diperbolehkan mendaftar?",
+    answer: "Tidak diperkenankan. Pendaftar tidak sedang menerima beasiswa atau ikatan dinas dari instansi, yayasan, korporasi, maupun lembaga pemerintah lain demi memastikan azas pemerataan kesempatan bagi seluruh mahasiswa.",
+  },
+  {
+    num: "06",
+    question: "Dokumen apa saja yang wajib dipersiapkan untuk seleksi tahap administrasi?",
+    answer: "Berkas wajib meliputi Formulir Biodata A1 resmi Bank Indonesia, fotokopi KTP & KTM aktif, Transkrip Nilai resmi (IPK minimal 3.00), Surat Rekomendasi Fakultas/Rektorat, Surat Pernyataan Bebas Beasiswa Lain, motivation letter (esai komitmen), serta sertifikat prestasi atau keaktifan organisasi pendukung.",
+  },
 ];
 
-const GenBIContactFAQ = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+const GenBIContactFAQ: React.FC = () => {
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
 
-  const contactInfo = [
-    { 
-      icon: <Mail size={24} />, 
-      label: "Email", 
-      value: "genbi.upnvjt@gmail.com",
-      link: "mailto:genbi.upnvjt@gmail.com"
-    },
-    { 
-      icon: <Instagram size={24} />, 
-      label: "Instagram", 
-      value: "@genbi_upnvjatim",
-      link: "https://www.instagram.com/genbi_upnvjatim/" 
-    },
-    { 
-      icon: <MessageCircle size={24} />, 
-      label: "WhatsApp", 
-      value: "Chat Sekarang", 
-      link: "https://wa.me/62881025134107"
-    }
-  ];
+  const toggleFAQ = (idx: number) => {
+    setOpenIdx(openIdx === idx ? null : idx);
+  };
 
   return (
-    <section id="contact-faq" className="py-24 bg-white relative z-10 overflow-visible">
-      <div className="container mx-auto px-6 max-w-[1400px]">
-        <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-16 items-start">
-          
-          {/* BAGIAN KIRI */}
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            className="w-full space-y-10"
-          >
-            <div>
-              <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase italic leading-[0.9] mb-6 text-center lg:text-left overflow-visible py-4 text-[#0B1F47]">
-                <span className="bg-gradient-to-r from-[#0B1F47] via-[#1a3a6e] to-[#0B1F47] bg-clip-text text-transparent block mb-2 pr-4">
-                  Hubungi
-                </span>
-                <span className="bg-gradient-to-r from-[#EAB308] via-[#FDE68A] to-[#B45309] bg-clip-text text-transparent pr-6">
-                  Kami
-                </span>
-              </h2>
-            </div>
+    <section id="beasiswa-faq" className="py-24 sm:py-32 bg-[#F8FAFC] text-slate-900 border-b border-slate-200 relative overflow-hidden">
+      
+      {/* Background Architectural Subtle Accents */}
+      <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:32px_32px] opacity-40 pointer-events-none" />
+      <div className="absolute top-1/3 right-10 w-[500px] h-[500px] bg-sky-100/50 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {contactInfo.map((item, idx) => (
-                <motion.a 
-                  key={idx}
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ y: -5 }}
-                  className="group p-6 bg-slate-50 rounded-[2rem] border border-slate-100 hover:border-[#EAB308]/50 hover:bg-white hover:shadow-xl transition-all duration-500 text-center flex flex-col items-center"
-                >
-                  <div className="w-12 h-12 bg-[#0B1F47] text-[#EAB308] rounded-xl flex items-center justify-center mb-4 shadow-lg">
-                    {item.icon}
+      <div className="container mx-auto px-6 sm:px-12 max-w-7xl relative z-10 space-y-16 sm:space-y-20">
+        
+        {/* Section Header: Strictly 2 Lines Without Badges or Slop */}
+        <div className="max-w-4xl mx-auto text-center space-y-3">
+          <h2 className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold tracking-tight text-[#071224] leading-tight">
+            <span className="block">Penerimaan Beasiswa Bank Indonesia</span>
+            <span className="block mt-1 text-[#0284C7] whitespace-normal sm:whitespace-nowrap">
+              Siap mengabdi, penggerak perubahan bangsa.
+            </span>
+          </h2>
+
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal pt-1 max-w-2xl mx-auto">
+            Program beasiswa tahunan Bank Indonesia bagi mahasiswa berprestasi UPN &quot;Veteran&quot; Jawa Timur untuk mengasah kepemimpinan, integritas, dan kontribusi nyata bagi ibu pertiwi.
+          </p>
+
+          {/* Action CTAs */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-3">
+            <Link
+              href="/berita"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0284C7] hover:bg-[#0369A1] text-white font-bold text-xs sm:text-sm tracking-wide shadow-md shadow-sky-600/20 transition-all transform hover:-translate-y-0.5 active:scale-95"
+            >
+              <span>Info &amp; Panduan Seleksi</span>
+              <ArrowRight size={15} />
+            </Link>
+
+            <a
+              href="https://www.instagram.com/genbi_upnvjatim/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-[#071224] border border-slate-300 font-semibold text-xs sm:text-sm tracking-wide shadow-xs transition-all transform hover:-translate-y-0.5 active:scale-95"
+            >
+              <span>Instagram Resmi</span>
+              <ArrowUpRight size={15} className="text-[#0284C7]" />
+            </a>
+          </div>
+        </div>
+
+        {/* 3 Criteria Cards (Clean Modern Typography + 3D Tactile Badges) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {criteria.map((item, idx) => {
+            return (
+              <div
+                key={idx}
+                className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-[#0284C7] transition-all duration-300 flex flex-col justify-between group"
+              >
+                <div className="space-y-4">
+                  {/* Top Bar: 3D Badge + Category Tag */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold tracking-wider text-[#0284C7] uppercase bg-sky-50 px-2.5 py-1 rounded-md border border-sky-100">
+                      {item.tag}
+                    </span>
+
+                    {/* 3D Tactile Token Badge */}
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-b from-[#0284C7] to-[#0369A1] text-white flex items-center justify-center font-black text-sm tracking-tight shadow-md shadow-sky-600/30 border-t border-sky-300/40 transform group-hover:scale-105 transition-transform">
+                      {item.num}
+                    </div>
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-1">{item.label}</p>
-                  <p className="text-[#0B1F47] font-bold text-xs italic">{item.value}</p>
-                </motion.a>
-              ))}
-            </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-[#0B1F47] justify-center lg:justify-start">
-                <div className="p-2 bg-[#EAB308] rounded-lg shadow-sm">
-                  <MapPin size={20} className="text-[#0B1F47]" />
-                </div>
-                <div>
-                  <p className="text-xs font-black uppercase tracking-widest text-slate-400">Lokasi Kami</p>
-                  <p className="font-bold uppercase tracking-tight">UPN "Veteran" Jawa Timur</p>
+                  <div className="space-y-1.5 pt-2">
+                    <h3 className="text-lg sm:text-xl font-extrabold text-[#071224] leading-snug">
+                      {item.title}
+                    </h3>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
-              
-              <div className="w-full h-[350px] rounded-[2.5rem] overflow-hidden border-4 border-slate-50 shadow-2xl relative group">
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3957.266224372991!2d112.7876256!3d-7.3304586!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7fac70e443301%3A0x6b801a6b0c679905!2sUPN%20%22Veteran%22%20Jawa%20Timur!5e0!3m2!1sid!2sid!4v1700000000000!5m2!1sid!2sid"
-                  width="100%" 
-                  height="100%" 
-                  style={{ border: 0 }} 
-                  allowFullScreen={true} 
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="transition-all duration-700"
-                  title="Peta Lokasi UPN Veteran Jawa Timur"
-                ></iframe>
-                
-                <a 
-                  href="https://maps.app.goo.gl/3fTuxEHeD5U2iA8Y9" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="absolute bottom-6 right-6 bg-[#0B1F47] text-white px-6 py-3 rounded-full text-xs font-bold shadow-2xl flex items-center gap-2 hover:bg-[#EAB308] hover:text-[#0B1F47] transition-all z-30"
+            );
+          })}
+        </div>
+
+        {/* FAQ Accordion Suite (Centered, Clean & Fully Balanced) */}
+        <div className="max-w-4xl mx-auto space-y-8 pt-4">
+          
+          <div className="text-center space-y-2 border-b border-slate-200 pb-6">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#0284C7] block">
+              FREQUENTLY ASKED QUESTIONS
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-[#071224] tracking-tight">
+              Pertanyaan yang Sering Diajukan
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto">
+              Informasi lengkap seputar kriteria, syarat administrasi, dan alur seleksi Beasiswa Bank Indonesia di UPN &quot;Veteran&quot; Jawa Timur.
+            </p>
+          </div>
+
+          <div className="space-y-3.5">
+            {faqs.map((faq, idx) => {
+              const isOpen = openIdx === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl bg-white border border-slate-200/90 shadow-xs hover:border-[#0284C7]/50 transition-all overflow-hidden"
                 >
-                  Buka di Peta <MapPin size={14} className="text-[#EAB308]" />
-                </a>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* BAGIAN KANAN */}
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false, amount: 0.3 }}
-            transition={{ duration: 0.8 }}
-            className="w-full bg-[#0B1F47] rounded-[3.5rem] p-8 md:p-12 shadow-2xl relative overflow-visible"
-          >
-            <div className="relative z-10 overflow-visible">
-              <h3 className="text-4xl font-black uppercase tracking-tighter mb-10 flex items-center gap-4 italic leading-tight py-4">
-                <span className="w-12 h-[3px] bg-[#EAB308] shrink-0"></span>
-                <span className="bg-gradient-to-r from-white via-slate-200 to-white bg-clip-text text-transparent">
-                  FAQ
-                </span>
-              </h3>
-
-              <div className="space-y-4">
-                {faqs.map((faq, index) => (
-                  <div 
-                    key={index} 
-                    className={`rounded-[2rem] transition-all duration-500 border ${
-                      openIndex === index ? "bg-white/10 border-[#EAB308]/50 shadow-lg" : "bg-white/5 border-white/10 hover:border-white/20"
-                    }`}
+                  <button
+                    onClick={() => toggleFAQ(idx)}
+                    className="w-full p-5 sm:p-6 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/70 transition-colors"
                   >
-                    <button
-                      onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                      className="w-full flex items-center justify-between p-6 md:p-7 text-left outline-none focus:outline-none focus:ring-2 focus:ring-[#EAB308]/50"
-                    >
-                      <span className={`font-bold tracking-tight transition-colors pr-4 text-base md:text-lg ${
-                        openIndex === index ? "text-[#EAB308]" : "text-white"
-                      }`}>
+                    <div className="flex items-center gap-3.5">
+                      <span className="text-xs font-bold text-[#0284C7] shrink-0">
+                        {faq.num}
+                      </span>
+                      <span className="text-xs sm:text-sm font-bold text-[#071224] leading-snug">
                         {faq.question}
                       </span>
-                      <motion.div
-                        animate={{ rotate: openIndex === index ? 180 : 0 }}
-                        className={`shrink-0 transition-colors ${openIndex === index ? "text-[#EAB308]" : "text-white/30"}`}
-                      >
-                        <ChevronDown size={20} />
-                      </motion.div>
-                    </button>
+                    </div>
+                    <ChevronDown
+                      size={18}
+                      className={`text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#0284C7]' : ''}`}
+                    />
+                  </button>
 
-                    <AnimatePresence initial={false}>
-                      {openIndex === index && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.4, ease: "easeInOut" }}
-                        >
-                          <div className="px-7 pb-7 text-slate-300 text-sm md:text-base leading-relaxed font-medium italic">
-                            <div className="w-full h-[1px] bg-white/10 mb-6" />
-                            {faq.answer}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+                  {isOpen && (
+                    <div className="px-5 sm:px-6 pb-6 pt-1 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100 bg-slate-50/40">
+                      <p className="pl-7">{faq.answer}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
         </div>
+
       </div>
     </section>
   );

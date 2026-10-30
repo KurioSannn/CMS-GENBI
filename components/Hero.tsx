@@ -1,10 +1,10 @@
 "use client";
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import type { Banner } from '@/lib/db';
 
 interface HeroProps {
@@ -15,50 +15,72 @@ const defaultSlides = [
   {
     id: 1,
     image: "/carousel-1.jpg",
-    title: "Generasi Baru Indonesia",
-    subtitle: "Energi untuk Negeri",
-    desc: "Komunitas penerima beasiswa Bank Indonesia yang siap menjadi agen perubahan dan pemimpin masa depan.",
-    buttonText: "Jelajahi Kami",
-    buttonUrl: "#tentang-kami",
+    badge: "ENERGI UNTUK NEGERI",
+    titleMain: "Generasi Baru Indonesia",
+    titleSub: "UPN \"Veteran\" Jawa Timur",
+    desc: "Komunitas resmi mahasiswa berprestasi penerima Beasiswa Bank Indonesia. Garda terdepan komunikasi kebijakan moneter, akselerator inovasi sosial, dan perwujudan karakter Bela Negara.",
+    primaryCta: "Jelajahi Profil",
+    primaryUrl: "#tentang-kami",
+    secondaryCta: "Rekam Prestasi",
+    secondaryUrl: "#prestasi",
   },
   {
     id: 2,
     image: "/corousel-2.jpg",
-    title: "Dedikasi Untuk Negeri",
-    subtitle: "Berkontribusi Nyata",
-    desc: "Mengabdi kepada masyarakat melalui program sosial, pendidikan, dan pengembangan ekonomi kreatif.",
-    buttonText: "Lihat Kegiatan",
-    buttonUrl: "#kegiatan",
+    badge: "CBP RUPIAH • DIGITALISASI QRIS",
+    titleMain: "Dedikasi Nyata Bagi",
+    titleSub: "Masyarakat & Inovasi Sosial",
+    desc: "Menggaungkan literasi Cinta Bangga Paham Rupiah, mendampingi transformasi digital para pelaku UMKM Surabaya, serta menggerakkan aksi nyata kepedulian lingkungan hidup berkelanjutan.",
+    primaryCta: "Program Kerja",
+    primaryUrl: "#program-kerja",
+    secondaryCta: "Departemen",
+    secondaryUrl: "#struktur-organisasi",
   },
   {
     id: 3,
     image: "/corousel-3.jpg",
-    title: "Frontliner Bank Indonesia",
-    subtitle: "Mengkomunikasikan Kebijakan",
-    desc: "Menjadi garda terdepan dalam menyampaikan kebijakan Bank Indonesia kepada masyarakat luas.",
-    buttonText: "Baca Berita",
-    buttonUrl: "/berita",
+    badge: "FRONT LINERS • CHANGE AGENTS • FUTURE LEADERS",
+    titleMain: "Frontliner Bank Indonesia",
+    titleSub: "Karakter Bela Negara",
+    desc: "Kawah candradimuka kepemimpinan muda berjiwa tangguh, berwawasan kebangsaan, dan siap bertransformasi menjadi calon pemimpin bangsa di era transformasi ekonomi digital.",
+    primaryCta: "Pelajari Mandat",
+    primaryUrl: "#visi-misi",
+    secondaryCta: "Departemen",
+    secondaryUrl: "#struktur-organisasi",
   },
 ];
 
-const Hero = ({ banners }: HeroProps) => {
+const Hero: React.FC<HeroProps> = ({ banners }) => {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 }, [
-    Autoplay({ delay: 6000, stopOnInteraction: false })
+    Autoplay({ delay: 6000, stopOnInteraction: false }),
   ]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const activeBanners = banners?.filter(b => b.isActive);
+  const activeBanners = banners?.filter((b) => b.isActive);
   const slides = activeBanners && activeBanners.length > 0
-    ? activeBanners.map(b => ({
-        id: b.id,
-        image: b.imageUrl,
-        title: b.title,
-        subtitle: b.subtitle || "Energi untuk Negeri",
-        desc: b.subtitle || "Komunitas penerima beasiswa Bank Indonesia yang siap menjadi agen perubahan dan pemimpin masa depan.",
-        buttonText: b.buttonText || "Jelajahi Kami",
-        buttonUrl: b.buttonUrl || "#tentang-kami",
-      }))
+    ? activeBanners.map((b, i) => {
+        const fallback = defaultSlides[i % defaultSlides.length];
+        const primaryCta = b.buttonText && b.buttonText !== "Baca Berita"
+          ? b.buttonText
+          : (i === 2 ? "Pelajari Mandat" : fallback.primaryCta);
+        const primaryUrl = b.buttonUrl && b.buttonUrl !== "/berita"
+          ? b.buttonUrl
+          : fallback.primaryUrl;
+
+        return {
+          id: b.id,
+          image: b.imageUrl || fallback.image,
+          badge: b.subtitle ? b.subtitle.toUpperCase() : fallback.badge,
+          titleMain: b.title || fallback.titleMain,
+          titleSub: fallback.titleSub,
+          desc: fallback.desc,
+          primaryCta,
+          primaryUrl,
+          secondaryCta: fallback.secondaryCta,
+          secondaryUrl: fallback.secondaryUrl,
+        };
+      })
     : defaultSlides;
 
   const onSelect = useCallback(() => {
@@ -72,102 +94,114 @@ const Hero = ({ banners }: HeroProps) => {
   }, [emblaApi, onSelect]);
 
   return (
-    <section id="beranda" className="relative h-screen w-full overflow-hidden bg-[#0B1F40]">
-      {/* Container Carousel */}
-      <div className="h-full w-full" ref={emblaRef}>
+    <section id="beranda" className="group/hero relative w-full h-screen min-h-[620px] bg-[#050C18] text-white overflow-hidden">
+      
+      {/* 1. EMBLA HERO CAROUSEL */}
+      <div className="relative h-full w-full" ref={emblaRef}>
         <div className="flex h-full">
-          {slides.map((slide, index) => (
-            <div key={slide.id} className="relative h-full w-full flex-[0_0_100%]">
+          {slides.map((slide, idx) => (
+            <div key={slide.id} className="relative h-full w-full flex-[0_0_100%] flex items-center justify-center overflow-hidden">
               
-              {/* 1. LAYER GAMBAR UTAMA */}
-              <div className="relative h-full w-full">
-                <Image 
-                  src={slide.image} 
-                  alt={slide.title} 
-                  fill 
-                  style={{ objectFit: 'cover' }}
-                  priority={index === 0}
-                  className="brightness-[0.85]"
+              {/* Background Photo with Subtle Ken Burns Cinematic Motion */}
+              <div className="absolute inset-0">
+                <Image
+                  src={slide.image}
+                  alt={slide.titleMain}
+                  fill
+                  priority={idx === 0}
+                  className={`object-cover object-center brightness-[0.88] contrast-[1.03] transition-transform duration-[8000ms] ease-out ${
+                    selectedIndex === idx ? 'scale-105' : 'scale-100'
+                  }`}
                   sizes="100vw"
                 />
               </div>
 
-              {/* 2. LAYER GRADIENT OVERLAY */}
-              <div className="absolute inset-0 bg-gradient-to-r from-[#0B1F40] via-[#0B1F40]/50 to-transparent opacity-90"></div>
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F40] via-transparent to-transparent opacity-80"></div>
+              {/* Luminous GenBI Brand Gradient Overlay (Deep Navy to Royal Sapphire) */}
+              <div className="absolute inset-0 bg-gradient-to-br from-[#061226]/90 via-[#07244D]/80 to-[#021B38]/90 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050C18] via-transparent to-[#050C18]/60" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-sky-500/25 via-transparent to-transparent pointer-events-none" />
 
-              {/* 3. KONTEN TEKS */}
-              <div className="absolute inset-0 flex items-center">
-                <div className="container mx-auto px-6 pt-20">
-                  <div className="max-w-3xl">
-                    
-                    {/* Subtitle Pill */}
-                    <motion.div 
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.2, duration: 0.8 }}
-                      className="mb-6"
-                    >
-                        <span className="inline-flex items-center gap-2 py-1.5 px-4 border border-yellow-400/30 rounded-full bg-yellow-500/10 backdrop-blur-md text-yellow-400 font-bold tracking-widest uppercase text-xs md:text-sm">
-                          <span className="w-2 h-2 rounded-full bg-yellow-400 animate-pulse"></span>
-                          {slide.subtitle}
-                        </span>
-                    </motion.div>
+              {/* Hero Content Stage - Pure Institutional Elegance */}
+              <div className="relative z-10 container mx-auto px-6 sm:px-12 max-w-6xl pt-20 pb-20 flex flex-col items-center text-center space-y-6">
 
-                    {/* Judul Utama */}
-                    <motion.h1 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4, duration: 0.8 }}
-                      className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight"
-                    >
-                      {slide.title}
-                    </motion.h1>
+                {/* Colossal & Unique High-Impact Title (Strictly 2 Neat Lines & No Clipping) */}
+                <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-[66px] xl:text-[74px] font-black tracking-tight leading-[1.16] max-w-5xl mx-auto">
+                  <span className="block text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.7)] sm:whitespace-nowrap">
+                    {slide.titleMain}
+                  </span>
+                  <span className="block mt-1 sm:mt-2 pb-2 bg-gradient-to-r from-[#FFF0BA] via-[#FBBF24] via-[#F59E0B] via-[#FBBF24] to-[#FFF0BA] bg-[length:200%_auto] animate-shimmer-gold bg-clip-text text-transparent drop-shadow-[0_4px_35px_rgba(245,158,11,0.45)] sm:whitespace-nowrap leading-[1.18]">
+                    {slide.titleSub}
+                  </span>
+                </h1>
 
-                    {/* Deskripsi */}
-                    <motion.p 
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.6, duration: 0.8 }}
-                      className="text-lg md:text-xl text-gray-200 mb-10 max-w-xl leading-relaxed font-light"
-                    >
-                      {slide.desc}
-                    </motion.p>
+                {/* Balanced Description Narrative */}
+                <p className="text-sm sm:text-base lg:text-lg text-slate-200/90 leading-relaxed font-normal max-w-2xl mx-auto drop-shadow-sm">
+                  {slide.desc}
+                </p>
 
-                    {/* Tombol CTA */}
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.8, duration: 0.8 }}
-                    >
-                        <a href={slide.buttonUrl} className="group inline-flex items-center gap-3 px-8 py-4 bg-yellow-500 text-[#0B1F40] font-bold rounded-full hover:bg-white transition-all shadow-lg shadow-yellow-500/20 hover:shadow-white/20 transform hover:-translate-y-1">
-                            {slide.buttonText}
-                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform"/>
-                        </a>
-                    </motion.div>
+                {/* Antasena-Style Solid Rounded-xl Buttons (No Toy Icons, Clean Corporate) */}
+                <div className="flex flex-wrap items-center justify-center gap-4 pt-3">
+                  <Link
+                    href={slide.primaryUrl}
+                    className="inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-[#0284C7] hover:bg-[#0369A1] text-white font-bold text-sm tracking-wide shadow-lg shadow-sky-950/40 transition-all transform hover:-translate-y-0.5 active:scale-95"
+                  >
+                    <span>{slide.primaryCta}</span>
+                  </Link>
 
-                  </div>
+                  <Link
+                    href={slide.secondaryUrl}
+                    className="inline-flex items-center justify-center px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/25 text-white font-semibold text-sm tracking-wide backdrop-blur-md transition-all active:scale-95"
+                  >
+                    <span>{slide.secondaryCta}</span>
+                  </Link>
                 </div>
+
               </div>
 
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Indikator Dots */}
-      <div className="absolute bottom-10 left-0 w-full flex justify-center gap-3 z-20">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => emblaApi && emblaApi.scrollTo(index)}
-            className={`h-1.5 rounded-full transition-all duration-500 ${
-              index === selectedIndex 
-                ? 'w-12 bg-yellow-400 shadow-lg shadow-yellow-400/50' 
-                : 'w-3 bg-white/20 hover:bg-white/40'
-            }`}
-          />
-        ))}
+        {/* Minimalist Progress Indicator Dots */}
+        <div className="absolute bottom-16 sm:bottom-18 left-0 right-0 z-20 flex items-center justify-center gap-2.5">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => emblaApi && emblaApi.scrollTo(i)}
+              aria-label={`Pindah ke slide ${i + 1}`}
+              className={`h-1.5 transition-all duration-400 rounded-full cursor-pointer ${
+                selectedIndex === i 
+                  ? 'w-8 bg-[#FCD34D]' 
+                  : 'w-2 bg-white/35 hover:bg-white/60'
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Subtle Scroll Down Prompt */}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1 opacity-60 hover:opacity-100 transition-opacity">
+          <Link href="#prestasi" className="flex flex-col items-center gap-1 text-[10px] font-mono tracking-[0.2em] uppercase text-slate-300">
+            <span>Scroll</span>
+            <ChevronDown size={14} className="animate-bounce text-[#FCD34D]" />
+          </Link>
+        </div>
+
+        {/* Subtle Side Navigation Chevrons (Appear on Hover) */}
+        <button
+          onClick={() => emblaApi && emblaApi.scrollPrev()}
+          aria-label="Slide sebelumnya"
+          className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/25 hover:bg-black/60 text-white/70 hover:text-white border border-white/10 backdrop-blur-xs transition-all opacity-0 group-hover/hero:opacity-100 cursor-pointer hidden md:flex items-center justify-center"
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <button
+          onClick={() => emblaApi && emblaApi.scrollNext()}
+          aria-label="Slide selanjutnya"
+          className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-black/25 hover:bg-black/60 text-white/70 hover:text-white border border-white/10 backdrop-blur-xs transition-all opacity-0 group-hover/hero:opacity-100 cursor-pointer hidden md:flex items-center justify-center"
+        >
+          <ChevronRight size={20} />
+        </button>
+
       </div>
 
     </section>

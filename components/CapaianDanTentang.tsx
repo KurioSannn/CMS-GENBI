@@ -1,217 +1,111 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
-import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
-import { Users, Zap, Star, TrendingUp, Award, History, Landmark, ShieldCheck } from "lucide-react";
+import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { History, Award, Users, TrendingUp, ShieldCheck, ArrowUpRight } from 'lucide-react';
 
-const Counter = ({ value, duration = 2 }: { value: number; duration?: number }) => {
-  const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => Math.round(latest));
-  const [displayValue, setDisplayValue] = useState(0);
-  const ref = useRef(null);
-  const isInView = useInView(ref);
-
-  useEffect(() => {
-    if (isInView) {
-      const controls = animate(count, value, { duration: duration, ease: "easeOut" });
-      return controls.stop;
-    } else {
-      count.set(0);
-    }
-  }, [isInView, count, value, duration]);
-
-  useEffect(() => {
-    return rounded.on("change", (latest) => setDisplayValue(latest));
-  }, [rounded]);
-
-  return <span ref={ref}>{displayValue}</span>;
-};
-
-const CapaianDanTentang = () => {
+const CapaianDanTentang: React.FC = () => {
   const stats = [
-    { label: "ANGGOTA AKTIF", value: 100, suffix: "+", sub: "MAHASISWA TERPILIH", icon: <Users size={100} /> },
-    { label: "PROKER TERLAKSANA", value: 50, suffix: "+", sub: "TAHUNAN", icon: <TrendingUp size={100} /> },
-    { label: "IPK RATA-RATA", value: 3.75, suffix: "", sub: "PRESTASI AKADEMIK", icon: <Award size={100} />, isFloat: true },
+    { label: "MAHASISWA TERPILIH", value: "100+", sub: "Awardee Aktif 2026", code: "01" },
+    { label: "PROGRAM TERLAKSANA", value: "50+", sub: "Inisiatif Tahunan", code: "02" },
+    { label: "IPK RATA-RATA", value: "3.75", sub: "Prestasi Akademik", code: "03" },
   ];
 
   return (
-    <div className="overflow-hidden bg-[#F8FAFC]">
-      {/* --- SECTION 1: CAPAIAN DENGAN TEKS GRADASI --- */}
-      <section className="py-24 relative">
-        <div className="container mx-auto px-6 max-w-[1400px]">
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: false }}
-            className="mb-16 border-l-8 border-yellow-500 pl-6"
-          >
-            {/* GRADASI WARNA PADA TEXT FONT CAPAIAN */}
-            <h2 className="text-4xl md:text-6xl font-black tracking-tighter uppercase leading-none italic">
-              <span className="text-[#0B1F40]">Capaian</span> <br />
-              <span className="bg-gradient-to-r from-[#EAB308] via-[#FDE68A] to-[#B45309] bg-clip-text text-transparent drop-shadow-sm px-1">
-                Generasi Baru
-              </span> <br />
-              <span className="text-[#EAB308] text-2xl md:text-4xl mt-2 block">
-                UPN "Veteran" Jawa Timur
-              </span>
+    <section className="py-24 bg-[#050C18] text-white relative overflow-hidden border-b border-white/10">
+      <div className="container mx-auto px-6 sm:px-12 max-w-7xl space-y-16 relative z-10">
+        
+        {/* Section Header (BudayaGo Editorial Style) */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8">
+          <div className="max-w-2xl space-y-3">
+            <div className="inline-flex items-center gap-2 tracking-[0.2em] text-[11px] font-bold uppercase text-[#FCD34D]">
+              <span>07 / REKAM JEJAK &amp; SEJARAH ORGANISASI</span>
+            </div>
+            
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Pilar keunggulan. <br />
+              <span className="text-[#FCD34D]">Dedikasi nyata pemuda bagi negeri.</span>
             </h2>
-          </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false }}
-                transition={{ delay: i * 0.1 }}
-                className="p-10 bg-white rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100 group relative overflow-hidden"
-              >
-                <div className="absolute -right-6 -top-6 text-slate-100 group-hover:text-yellow-500/10 transition-colors duration-500">
-                  {stat.icon}
-                </div>
-                <div className="relative z-10 text-left">
-                  <h3 className="text-7xl font-black text-[#0B1F40] mb-4 group-hover:text-yellow-600 transition-colors italic">
-                    {stat.isFloat ? "3.75" : <Counter value={stat.value} />}
-                    {stat.suffix}
-                  </h3>
-                  <span className="block text-lg font-extrabold text-slate-800 tracking-tight uppercase italic">{stat.label}</span>
-                  <span className="text-sm font-medium text-slate-400 tracking-widest uppercase">{stat.sub}</span>
-                </div>
-              </motion.div>
-            ))}
+            <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+              Rekam jejak performa akademis dan kontribusi sosial nyata mahasiswa penerima Beasiswa Bank Indonesia di Jawa Timur.
+            </p>
           </div>
         </div>
-      </section>
 
-      {/* --- SECTION 2: SEJARAH & 3 FUNGSI UTAMA --- */}
-      <section className="py-28 bg-[#0B1F40] text-white relative overflow-hidden">
-        <div className="container mx-auto px-6 max-w-[1400px] relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-start">
-            
-            {/* Kiri: Sejarah & Polaroid Photos */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: false }}
-              className="space-y-8"
+        {/* 3 Large Technical Metric Blocks (Pertamina Style) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {stats.map((stat, i) => (
+            <div
+              key={i}
+              className="p-8 bg-[#0B1E38] border border-white/15 hover:border-[#EAB308] transition-colors relative"
             >
-              <div className="flex items-center gap-4 text-yellow-400 uppercase tracking-[0.4em] font-bold text-sm">
-                <History size={20} />
-                <span>Our Journey</span>
+              <div className="flex items-center justify-between text-slate-400 font-mono text-xs font-bold mb-4">
+                <span>{stat.code} // REKOR</span>
+                <span className="w-2 h-2 rounded-full bg-[#EAB308]" />
               </div>
-              <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-tight text-left italic">
-                Sejarah <br /><span className="bg-gradient-to-r from-[#EAB308] via-[#FDE68A] to-[#B45309] bg-clip-text text-transparent">GenBI.</span>
-              </h2>
-              <div className="space-y-6 text-slate-300 text-lg leading-relaxed text-left">
-                <p>
-                  Generasi Baru Indonesia (GenBI) resmi didirikan pada tanggal <span className="text-white font-bold">11 November 2011</span>. 
-                  Komunitas ini lahir atas inisiasi Bank Indonesia sebagai wadah bagi para mahasiswa terpilih penerima beasiswa Bank Indonesia yang tersebar di seluruh pelosok negeri.
-                </p>
-                <p className="bg-white/5 p-8 rounded-[2rem] border-l-4 border-yellow-500 italic shadow-2xl">
-                  "GenBI tidak hanya sekadar kelompok penerima bantuan finansial, melainkan sebuah laboratorium kepemimpinan yang dibentuk untuk mengasah jiwa sosial dan kompetensi mahasiswa guna mempersiapkan pemimpin bangsa di masa depan."
-                </p>
-                <p>
-                  Di lingkungan UPN "Veteran" Jawa Timur, GenBI terus bertransformasi menjadi energi progresif yang aktif dalam mendukung program kerja Bank Indonesia dan pengabdian masyarakat.
-                </p>
+              <span className="text-4xl sm:text-6xl font-black text-white tracking-tight block">
+                {stat.value}
+              </span>
+              <span className="block text-xs sm:text-sm font-bold text-[#FCD34D] uppercase tracking-wider mt-2">
+                {stat.label}
+              </span>
+              <span className="block text-xs text-slate-400 mt-1">
+                {stat.sub}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        {/* Historical Milestone Section (11 Nov 2011) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center pt-8 border-t border-white/10">
+          
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2 text-[#FCD34D] text-xs font-mono tracking-widest uppercase">
+              <History size={15} />
+              <span>TONGGAK PERJALANAN SEJAK 11 NOVEMBER 2011</span>
+            </div>
+
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-white leading-tight">
+              Kisah di balik lahirnya wadah dedikasi pemuda bagi ibu pertiwi.
+            </h3>
+
+            <div className="space-y-4 text-slate-300 text-sm sm:text-base leading-relaxed">
+              <p>
+                <strong>Generasi Baru Indonesia (GenBI)</strong> resmi didirikan pada tanggal <strong>11 November 2011</strong>. 
+                Komunitas ini lahir atas inisiasi Bank Indonesia sebagai wadah bagi para mahasiswa terpilih penerima beasiswa Bank Indonesia yang tersebar di seluruh pelosok negeri.
+              </p>
+              <div className="p-5 bg-[#0B1E38] border-l-4 border-[#EAB308] text-slate-200 text-xs sm:text-sm font-medium">
+                &ldquo;GenBI tidak hanya sekadar kelompok penerima bantuan finansial, melainkan sebuah laboratorium kepemimpinan yang dibentuk untuk mengasah jiwa sosial dan kompetensi mahasiswa guna mempersiapkan pemimpin bangsa di masa depan.&rdquo;
               </div>
+              <p className="text-xs text-slate-400">
+                — Amanat Kebanksentralan Departemen Komunikasi Bank Indonesia
+              </p>
+            </div>
+          </div>
 
-{/* Area 3 Polaroid Photos */}
-<div className="relative flex justify-center lg:justify-start mt-12 space-x-6">
-  {/* Foto 1: GenBI Tour */}
-  <motion.div
-    initial={{ rotate: -5, y: 50, opacity: 0 }}
-    whileInView={{ rotate: -5, y: 0, opacity: 1 }}
-    viewport={{ once: false }}
-    transition={{ delay: 0.2, duration: 0.6 }}
-    className="bg-white p-3 shadow-2xl rounded-sm transform rotate-[-5deg] hover:rotate-0 hover:scale-110 transition-all duration-300 z-20 w-[160px] md:w-[200px]"
-  >
-    <div className="relative aspect-square overflow-hidden bg-slate-200">
-      <Image 
-        src="/GenBI Tour.jpeg" 
-        alt="GenBI Tour" 
-        fill 
-        className="object-cover" 
-      />
-    </div>
-    <p className="text-center text-[10px] md:text-xs font-bold text-gray-700 mt-3 font-mono uppercase tracking-tighter">GenBI Tour</p>
-  </motion.div>
-
-  {/* Foto 2: Kegiatan */}
-  <motion.div
-    initial={{ rotate: 8, y: 50, opacity: 0 }}
-    whileInView={{ rotate: 8, y: 0, opacity: 1 }}
-    viewport={{ once: false }}
-    transition={{ delay: 0.4, duration: 0.6 }}
-    className="bg-white p-3 shadow-2xl rounded-sm transform rotate-[8deg] hover:rotate-0 hover:scale-110 transition-all duration-300 z-10 -ml-12 w-[160px] md:w-[200px]"
-  >
-    <div className="relative aspect-square overflow-hidden bg-slate-200">
-      <Image 
-        src="/kegiatan.jpeg" 
-        alt="Kegiatan" 
-        fill 
-        className="object-cover" 
-      />
-    </div>
-    <p className="text-center text-[10px] md:text-xs font-bold text-gray-700 mt-3 font-mono uppercase tracking-tighter">Kegiatan Komunitas</p>
-  </motion.div>
-
-  {/* Foto 3: Pengabdian */}
-  <motion.div
-    initial={{ rotate: -12, y: 50, opacity: 0 }}
-    whileInView={{ rotate: -12, y: 0, opacity: 1 }}
-    viewport={{ once: false }}
-    transition={{ delay: 0.6, duration: 0.6 }}
-    className="hidden md:block bg-white p-3 shadow-2xl rounded-sm transform rotate-[-12deg] hover:rotate-0 hover:scale-110 transition-all duration-300 z-0 -ml-12 w-[200px]"
-  >
-    <div className="relative aspect-square overflow-hidden bg-slate-200">
-      <Image 
-        src="/pengabdian.JPG" 
-        alt="Pengabdian" 
-        fill 
-        className="object-cover" 
-      />
-    </div>
-    <p className="text-center text-xs font-bold text-gray-700 mt-3 font-mono uppercase tracking-tighter">Pengabdian Masyarakat</p>
-  </motion.div>
-</div>
-            </motion.div>
-
-            {/* Kanan: 3 Fungsi Utama GenBI */}
-            <div className="flex flex-col justify-center space-y-8">
-              <div className="flex items-center gap-4 text-yellow-400 uppercase tracking-[0.4em] font-bold text-sm">
-                <ShieldCheck size={20} />
-                <span>3 Fungsi Utama GenBI</span>
-              </div>
-              <div className="grid gap-6">
-                {[
-                  { title: "Front Liners", icon: <Landmark />, desc: "Menjadi garda terdepan dalam mengomunikasikan kebijakan Bank Indonesia kepada masyarakat luas." },
-                  { title: "Change Agents", icon: <Zap />, desc: "Menjadi agen perubahan yang memberikan dampak positif dan inspirasi melalui berbagai aksi nyata serta inovasi kreatif." },
-                  { title: "Future Leaders", icon: <Star />, desc: "Mempersiapkan diri sebagai calon pemimpin masa depan bangsa yang memiliki integritas tinggi dan kompetensi profesional." }
-                ].map((fungsi, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: 50 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: false }}
-                    transition={{ delay: i * 0.1 }}
-                    className="p-8 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 flex gap-6 items-start group hover:bg-white/10 transition-all shadow-2xl"
-                  >
-                    <div className="p-4 rounded-2xl bg-yellow-500 text-[#0B1F40] shadow-lg group-hover:rotate-12 transition-transform shrink-0">
-                      {fungsi.icon}
-                    </div>
-                    <div className="text-left">
-                      <h3 className="text-2xl font-black uppercase tracking-tight mb-2 group-hover:text-yellow-400 transition-colors italic">{fungsi.title}</h3>
-                      <p className="text-slate-400 leading-relaxed text-sm">{fungsi.desc}</p>
-                    </div>
-                  </motion.div>
-                ))}
+          <div className="lg:col-span-5 relative">
+            <div className="relative h-72 sm:h-80 w-full overflow-hidden border border-white/20 bg-[#071224]">
+              <Image
+                src="/foto profile genbiupnvjt.png"
+                alt="Foto Profil GenBI UPNVJT"
+                fill
+                className="object-cover brightness-95"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#071224] via-transparent to-transparent" />
+              <div className="absolute bottom-4 left-4 right-4 text-white text-xs">
+                <span className="text-[10px] font-mono tracking-wider text-[#FCD34D] block uppercase">
+                  KOMISARIAT RESMI
+                </span>
+                <p className="font-bold">UPN "Veteran" Jawa Timur</p>
               </div>
             </div>
           </div>
+
         </div>
-      </section>
-    </div>
+
+      </div>
+    </section>
   );
 };
 

@@ -1,150 +1,255 @@
 "use client";
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import { BookOpen, Leaf, Lightbulb, TrendingUp, Landmark, HeartHandshake, GraduationCap, Sparkles } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowRight, ArrowUpRight, Calendar } from 'lucide-react';
+import type { Article } from '@/lib/db';
 
-const Kegiatan = () => {
-    const kegiatanList = [
-        { 
-            title: "Future Scholar Talk", 
-            desc: "Kegiatan daring Future Scholar Talk yang ditujukan bagi mahasiswa UPN Veteran Jawa Timur semester 4 dan 6 untuk memberikan strategi kunci lolos seleksi Beasiswa Bank Indonesia melalui persiapan berkas administrasi dan sesi berbagi pengalaman inspiratif bersama para awardee.", 
-            img: "/GenBI Webinar Career.png",
-            icon: <GraduationCap size={22} />,
-            tag: "Edukasi"
-        },
-        { 
-            title: "GenBI SCALE", 
-            desc: "Workshop pengembangan usaha yang dilaksanakan di Rungkut untuk para pelaku UMKM lokal dengan tujuan mendorong digitalisasi bisnis serta berbagi insight strategis guna meningkatkan daya saing ekonomi kreatif di era digital melalui kolaborasi nyata.", 
-            img: "/GENBI SCALE.png",
-            icon: <TrendingUp size={22} />,
-            tag: "Ekonomi"
-        },
-        { 
-            title: "GenBI COIN", 
-            desc: "Program edukasi literasi saham yang berkolaborasi dengan IDX Surabaya dan PT Kiwoom Sekuritas bagi mahasiswa GenBI guna memberikan pemahaman mendalam mengenai dinamika pasar modal dan praktik investasi yang bijak untuk masa depan finansial.", 
-            img: "/GenBI Coin.png",
-            icon: <Landmark size={22} />,
-            tag: "Finansial"
-        },
-        { 
-            title: "GenBI Planters", 
-            desc: "Aksi lingkungan bertema Satu Pot Tumbuh Bersama yang digelar di SDN Rungkut Mananggal 1 untuk mengajak siswa mengenal pentingnya merawat pohon dan menumbuhkan kepedulian terhadap kelestarian bumi sejak usia dini melalui aktivitas menanam interaktif.", 
-            img: "/Genbi Planters.png",
-            icon: <Leaf size={22} />,
-            tag: "Lingkungan"
-        },
-        { 
-            title: "BIVENTURE 2025", 
-            desc: "Kegiatan eksplorasi sejarah keuangan di Museum De Javasche Bank Surabaya bagi para peserta rekrutmen untuk mengupas tuntas cerita di balik mata uang Rupiah serta kebijakan Bank Indonesia melalui pengalaman belajar lapangan yang ikonik dan edukatif.", 
-            img: "/BIVENTURE.png",
-            icon: <Sparkles size={22} />,
-            tag: "Budaya"
-        },
-        { 
-            title: "GenBI EPT", 
-            desc: "Pelatihan intensif English Proficiency Test Preparation yang dilaksanakan di Ruang Bromo Gedung Rektorat bagi seluruh anggota GenBI UPNVJT guna membedah trik jitu serta meningkatkan kompetensi bahasa Inggris dalam menghadapi standar tes internasional.", 
-            img: "/GenBI ept.png",
-            icon: <BookOpen size={22} />,
-            tag: "Skill"
-        },
-        { 
-            title: "GenBI SHINE Part 2", 
-            desc: "Program edukasi kesehatan di UPTD Kampung Anak Negeri yang difokuskan untuk membangun kebiasaan hidup sehat bagi anak-anak melalui sosialisasi bahaya penyakit cacingan serta praktik tata cara mencuci tangan yang benar dalam kehidupan sehari-hari.", 
-            img: "/GenBI Shine Part 2.png",
-            icon: <HeartHandshake size={22} />,
-            tag: "Kesehatan"
-        },
-        { 
-            title: "GenBI SHINE Part 1", 
-            desc: "Inisiasi edukasi finansial Divisi Pendidikan melalui tema Belajar Rupiah Sejak Dini untuk memperkenalkan konsep Cinta Bangga Paham (CBP) Rupiah kepada anak-anak agar mereka mampu mengelola keuangan dengan cerdas dan bijak di masa depan.", 
-            img: "/GenBI Shine Part 1.png",
-            icon: <Lightbulb size={22} />,
-            tag: "Finansial"
-        },
-    ];
+interface KegiatanProps {
+  articles?: Article[];
+}
 
-    return (
-        <section id="program-divisi" className="py-24 bg-white overflow-hidden">
-            <div className="container mx-auto px-8 max-w-[1400px]">
+interface NewsItem {
+  id: number;
+  title: string;
+  slug: string;
+  category: string;
+  categoryGroup: 'all' | 'edukasi' | 'finansial' | 'ekonomi' | 'sosial';
+  excerpt: string;
+  image: string;
+  publishedAt: string;
+  author: string;
+  readTime: string;
+}
 
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false }}
-                        transition={{ duration: 0.8 }}
-                        className="max-w-2xl"
-                    >
-                        <span className="text-[#EAB308] font-black tracking-[0.4em] uppercase text-xs mb-5 block italic border-l-4 border-[#EAB308] pl-4">
-                            Aksi Nyata Kami
-                        </span>
+const defaultNewsList: NewsItem[] = [
+  {
+    id: 1,
+    title: "Future Scholar Talk: Bedah Berkas Administrasi & Simulasi Wawancara Beasiswa BI 2026",
+    slug: "future-scholar-talk-2026",
+    category: "Edukasi & Beasiswa",
+    categoryGroup: "edukasi",
+    excerpt: "Bimbingan teknis portofolio unggul, penulisan motivation letter berbobot, dan simulasi wawancara tatap muka bersama awardee berprestasi untuk persiapan seleksi Beasiswa Bank Indonesia.",
+    image: "/GenBI Webinar Career.png",
+    publishedAt: "30 Januari 2026",
+    author: "Divisi Pendidikan",
+    readTime: "4 min baca",
+  },
+  {
+    id: 2,
+    title: "GenBI SCALE: Akselerasi Digitalisasi UMKM Melalui QRIS di Kawasan Rungkut Surabaya",
+    slug: "genbi-scale-rungkut",
+    category: "Ekonomi Kreatif",
+    categoryGroup: "ekonomi",
+    excerpt: "Pendampingan langsung puluhan pedagang sentra kuliner dan UMKM dalam mengadopsi ekosistem transaksi nontunai QRIS guna memperluas daya saing di era ekonomi digital Jawa Timur.",
+    image: "/GENBI SCALE.png",
+    publishedAt: "25 Januari 2026",
+    author: "Divisi Kewirausahaan",
+    readTime: "3 min baca",
+  },
+  {
+    id: 3,
+    title: "GenBI COIN: Edukasi Literasi Pasar Modal & Saham Bersama Bursa Efek Indonesia",
+    slug: "genbi-coin-literasi",
+    category: "Finansial & CBP",
+    categoryGroup: "finansial",
+    excerpt: "Sinergi edukasi bersama IDX Surabaya dan KPw Bank Indonesia Jatim mengupas instrumen investasi cerdas serta pengenalan Cinta Bangga Paham Rupiah bagi ratusan mahasiswa.",
+    image: "/GenBI Coin.png",
+    publishedAt: "20 Januari 2026",
+    author: "Divisi Pendidikan",
+    readTime: "5 min baca",
+  },
+  {
+    id: 4,
+    title: "GenBI Planters: Aksi Nyata Konservasi Lingkungan Hidup di Sekolah Adiwiyata Jawa Timur",
+    slug: "genbi-planters-lingkungan",
+    category: "Sosial & Lingkungan",
+    categoryGroup: "sosial",
+    excerpt: "Gerakan penanaman ratusan bibit pohon peneduh serta workshop pengolahan kompos organik di sekolah Adiwiyata untuk menumbuhkan kepedulian bumi sejak usia dini.",
+    image: "/Genbi Planters.png",
+    publishedAt: "15 Januari 2026",
+    author: "Divisi Lingkungan",
+    readTime: "3 min baca",
+  },
+  {
+    id: 5,
+    title: "BIVENTURE: Eksplorasi Nilai Heritage dan Sejarah Moneter di Museum De Javasche Bank",
+    slug: "biventure-heritage-surabaya",
+    category: "Finansial & CBP",
+    categoryGroup: "finansial",
+    excerpt: "Napak tilas sejarah perbankan sentral di Surabaya guna menelusuri evolusi rupiah dan memperkokoh rasa bangga generasi muda terhadap kedaulatan moneter Indonesia.",
+    image: "/BIVENTURE.png",
+    publishedAt: "10 Januari 2026",
+    author: "Divisi Humas",
+    readTime: "4 min baca",
+  },
+];
 
-                        <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85] italic">
-                            <span className="text-[#0B1F40] block">Program</span>
-                            <span className="bg-gradient-to-r from-[#EAB308] via-[#FDE68A] to-[#B45309] bg-clip-text text-transparent drop-shadow-sm px-1">
-                                Unggulan
-                            </span>
-                        </h2>
-                    </motion.div>
+const categoryTabs = [
+  { key: 'all', label: 'Semua Berita' },
+  { key: 'edukasi', label: 'Edukasi & Beasiswa' },
+  { key: 'finansial', label: 'Finansial & CBP' },
+  { key: 'ekonomi', label: 'Ekonomi Kreatif' },
+  { key: 'sosial', label: 'Sosial & Lingkungan' },
+];
 
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        transition={{ duration: 0.8 }}
-                        className="hidden lg:block text-[#0B1F40]/10 font-black text-8xl italic select-none"
-                    >
-                        08
-                    </motion.div>
+const formatDate = (dateStr: string) => {
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch {
+    return dateStr;
+  }
+};
+
+const mapCategoryToGroup = (cat: string): 'all' | 'edukasi' | 'finansial' | 'ekonomi' | 'sosial' => {
+  const c = (cat || '').toLowerCase();
+  if (c.includes('edukasi') || c.includes('beasiswa') || c.includes('karir') || c.includes('karier')) return 'edukasi';
+  if (c.includes('finansial') || c.includes('cbp') || c.includes('rupiah') || c.includes('bank')) return 'finansial';
+  if (c.includes('ekonomi') || c.includes('umkm') || c.includes('wirausaha') || c.includes('bisnis')) return 'ekonomi';
+  if (c.includes('lingkungan') || c.includes('sosial') || c.includes('kesehatan') || c.includes('pohon')) return 'sosial';
+  return 'all';
+};
+
+const Kegiatan: React.FC<KegiatanProps> = ({ articles }) => {
+  const [activeTab, setActiveTab] = useState('all');
+
+  // Convert database articles to unified NewsItem format or fallback to defaultNewsList
+  const newsItems: NewsItem[] = articles && articles.length > 0
+    ? articles.map((a) => ({
+        id: a.id,
+        title: a.title,
+        slug: a.slug,
+        category: a.category || "Warta Resmi",
+        categoryGroup: mapCategoryToGroup(a.category),
+        excerpt: a.excerpt || "Kabar dan dokumentasi kegiatan terbaru dari mahasiswa penerima Beasiswa Bank Indonesia UPN Veteran Jawa Timur.",
+        image: a.coverImage || "/GenBI Webinar Career.png",
+        publishedAt: formatDate(a.publishedAt || a.createdAt),
+        author: a.author || "Redaksi GenBI",
+        readTime: "3 min baca",
+      }))
+    : defaultNewsList;
+
+  const filteredItems = activeTab === 'all'
+    ? newsItems
+    : newsItems.filter(item => item.categoryGroup === activeTab);
+
+  // Take top 3 items for a balanced, symmetric 3-card layout
+  const displayItems = (filteredItems.length > 0 ? filteredItems : newsItems).slice(0, 3);
+
+  return (
+    <section id="berita" className="py-24 sm:py-32 bg-[#F8FAFC] text-slate-900 border-b border-slate-200 relative overflow-hidden">
+      
+      {/* Background Architectural Subtle Accents */}
+      <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:32px_32px] opacity-40 pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-sky-200/20 rounded-full blur-[160px] pointer-events-none" />
+
+      <div className="container mx-auto px-6 sm:px-12 max-w-7xl relative z-10 space-y-12">
+        
+        {/* Section Header: Centered & Strictly 2 Lines */}
+        <div className="max-w-4xl mx-auto text-center space-y-3">
+          <h2 className="text-3xl sm:text-4xl lg:text-[44px] font-extrabold tracking-tight text-[#071224] leading-tight">
+            <span className="block">Warta &amp; kabar terkini</span>
+            <span className="block mt-1 text-[#0284C7] whitespace-normal sm:whitespace-nowrap">
+              Liputan resmi dinamika GenBI UPNVJT.
+            </span>
+          </h2>
+
+          <p className="text-xs sm:text-sm text-slate-500 leading-relaxed font-normal pt-1 max-w-2xl mx-auto">
+            Dokumentasi berkala inisiatif kepemimpinan, pendampingan masyarakat, serta publikasi kegiatan mahasiswa penerima Beasiswa Bank Indonesia di Jawa Timur.
+          </p>
+
+          {/* Minimalist Floating Pill Filter */}
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-2">
+            {categoryTabs.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-300 cursor-pointer ${
+                    isActive
+                      ? 'bg-[#071224] text-white shadow-md shadow-slate-900/20 ring-1 ring-[#071224]'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200 shadow-sm'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 3-Card Horizon Grid (Apple Newsroom Style: Symmetric, Equal Heights, Enlarged Luxury Cards) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch pt-4">
+          {displayItems.map((item) => (
+            <Link
+              key={item.id}
+              href={`/berita/${item.slug}`}
+              className="group bg-white rounded-2xl border border-slate-200/90 overflow-hidden shadow-[0_12px_35px_-5px_rgba(7,18,36,0.06)] hover:shadow-[0_28px_60px_-10px_rgba(7,18,36,0.14)] hover:border-[#0284C7]/50 hover:-translate-y-2 transition-all duration-500 flex flex-col justify-between h-full"
+            >
+              <div>
+                {/* 16:10 Cinematic Cover Image (Enlarged & Pure Clean) */}
+                <div className="relative h-64 sm:h-72 w-full overflow-hidden bg-slate-900 shrink-0">
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className="object-cover object-center group-hover:scale-106 transition-transform duration-700 ease-out brightness-95"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-80" />
                 </div>
 
-                {/* Grid Kegiatan */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-20">
-                    {kegiatanList.map((item, index) => (
-                        <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 50 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: false, margin: "-50px" }}
-                            transition={{ delay: (index % 4) * 0.1, duration: 0.6 }}
-                            className="group flex flex-col"
-                        >
-                            <div className="relative h-[420px] rounded-[3rem] overflow-hidden shadow-2xl bg-[#0B1F40] mb-8">
-                                <Image
-                                    src={item.img}
-                                    alt={item.title}
-                                    fill
-                                    className="object-cover opacity-85 group-hover:scale-110 transition-transform duration-1000 ease-out grayscale-[10%] group-hover:grayscale-0"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F40] via-transparent to-transparent opacity-90"></div>
+                {/* Content Area (Enlarged & Spacious) */}
+                <div className="p-7 sm:p-8 space-y-4">
+                  {/* Publication Metadata (Clean Date - Zero Clutter) */}
+                  <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                    <Calendar size={14} className="text-[#0284C7]" />
+                    <span>{item.publishedAt}</span>
+                  </div>
 
-                                <div className="absolute top-8 left-8">
-                                    <span className="px-5 py-2 bg-white/10 backdrop-blur-md border border-white/20 text-white text-[10px] font-black rounded-full uppercase tracking-[0.2em] italic shadow-xl">
-                                        {item.tag}
-                                    </span>
-                                </div>
+                  {/* Title with Fixed Min Height for Identical Baseline */}
+                  <h3 className="text-xl font-extrabold text-[#071224] leading-snug group-hover:text-[#0284C7] transition-colors min-h-[58px] line-clamp-2">
+                    {item.title}
+                  </h3>
 
-                                <div className="absolute inset-0 p-10 flex flex-col justify-end">
-                                    <div className="mb-6 w-12 h-12 rounded-2xl bg-[#EAB308] flex items-center justify-center text-[#0B1F40] shadow-xl">
-                                        {item.icon}
-                                    </div>
-                                    <h3 className="text-3xl font-black uppercase tracking-tighter italic leading-none bg-gradient-to-r from-[#EAB308] via-[#FDE68A] to-[#B45309] bg-clip-text text-transparent">
-                                        {item.title}
-                                    </h3>
-                                </div>
-                            </div>
-
-                            <div className="px-4">
-                                <p className="text-slate-500 text-[13px] font-bold leading-relaxed italic border-l-4 border-slate-100 group-hover:border-[#EAB308] pl-6 transition-all duration-500">
-                                    {item.desc}
-                                </p>
-                            </div>
-                        </motion.div>
-                    ))}
+                  {/* Excerpt with Fixed Min Height */}
+                  <p className="text-sm text-slate-600 leading-relaxed min-h-[66px] line-clamp-3">
+                    {item.excerpt}
+                  </p>
                 </div>
-            </div>
-        </section>
-    );
+              </div>
+
+              {/* Card Footer (Author & Read Action) */}
+              <div className="px-7 sm:px-8 pb-7 pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="font-semibold text-slate-500 line-clamp-1">
+                  {item.author}
+                </span>
+
+                <span className="inline-flex items-center gap-1.5 font-bold text-[#0284C7] group-hover:text-[#0369A1] group-hover:translate-x-1 transition-all">
+                  <span>Baca</span>
+                  <ArrowRight size={14} />
+                </span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Clean Center Action Link */}
+        <div className="flex justify-center pt-4">
+          <Link
+            href="/berita"
+            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-[#071224] hover:bg-[#0284C7] text-white text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 shadow-md transform hover:-translate-y-0.5 active:scale-95"
+          >
+            <span>Jelajahi Arsip Warta Lengkap</span>
+            <ArrowUpRight size={15} />
+          </Link>
+        </div>
+
+      </div>
+    </section>
+  );
 };
 
 export default Kegiatan;

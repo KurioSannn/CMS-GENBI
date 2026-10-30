@@ -19,6 +19,7 @@ import {
   Bell,
   Sparkles,
   Loader2,
+  Activity,
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -65,6 +66,12 @@ const navigationGroups: NavGroup[] = [
     group: 'ARSIP DATA',
     items: [
       { href: '/admin/dokumen', label: 'Dokumen Resmi', icon: FileText },
+    ],
+  },
+  {
+    group: 'SISTEM & AUDIT',
+    items: [
+      { href: '/admin/aktivitas', label: 'Log Aktivitas Admin', icon: Activity },
     ],
   },
 ];
@@ -134,11 +141,13 @@ export default function AdminLayout({ children, title, subtitle, action }: Admin
         {/* Brand Logo Header */}
         <div className="h-16 px-6 border-b border-slate-100 flex items-center justify-between">
           <Link href="/admin" className="flex items-center gap-3 group">
-            <img
-              src="/favicongenbiupnvj.png"
-              alt="Logo GenBI UPNVJT"
-              className="w-8 h-8 object-contain shrink-0 group-hover:scale-105 transition-transform"
-            />
+            <div className="w-9 h-9 rounded-full bg-white p-1.5 shadow-2xs border border-slate-200/90 shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
+              <img
+                src="/Logo GenBI UPN.png"
+                alt="Logo GenBI UPNVJT"
+                className="w-full h-full object-contain"
+              />
+            </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-slate-900 text-sm tracking-tight flex items-center gap-1">
                 GenBI<span className="text-[#0284C7]">Hub</span>
