@@ -1,10 +1,28 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import ReactCrop, {
+  Crop,
+  PixelCrop,
+  centerCrop,
+  convertToPixelCrop,
+  makeAspectCrop,
+} from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { UploadCloud, X, Check, Crop as CropIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getErrorMessage } from '@/lib/utils';
+
+const MAX_CROP_OUTPUT_DIMENSION = 2560;
+const CLIENT_WEBP_QUALITY = 0.95;
+
+function formatAspectRatioLabel(aspectRatio?: number): string {
+  if (!aspectRatio) return 'Rasio Bebas';
+  if (Math.abs(aspectRatio - 1) < 0.01) return 'Rasio terkunci: 1:1 (Persegi)';
+  if (Math.abs(aspectRatio - 16 / 9) < 0.01) return 'Rasio terkunci: 16:9 (Landscape)';
+  if (Math.abs(aspectRatio - 4 / 3) < 0.01) return 'Rasio terkunci: 4:3 (Landscape)';
+  if (Math.abs(aspectRatio - 3 / 4) < 0.01) return 'Rasio terkunci: 3:4 (Portrait)';
+  return 'Rasio terkunci';
+}
 
 interface FileUploadProps {
   value?: string | null;
@@ -48,6 +66,13 @@ export default function FileUpload({
   const [isCroppingOpen, setIsCroppingOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
+  const resetCropper = useCallback(() => {
+    setIsCroppingOpen(false);
+    setImgSrc('');
+    setCrop(undefined);
+    setCompletedCrop(undefined);
+  }, []);
+
   const uploadDirect = useCallback(async (file: File | Blob, filename: string = 'file.webp') => {
     setIsUploading(true);
     const formData = new FormData();
@@ -71,14 +96,13 @@ export default function FileUpload({
 
       onChange(json.data.url);
       toast.success('File berhasil diunggah!');
-      setIsCroppingOpen(false);
-      setImgSrc('');
+      resetCropper();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, 'Gagal mengunggah file'));
     } finally {
       setIsUploading(false);
     }
-  }, [onChange, scope]);
+  }, [onChange, resetCropper, scope]);
 
   const onSelectFile = useCallback((file: File) => {
     if (file.type === 'application/pdf') {
@@ -92,6 +116,8 @@ export default function FileUpload({
       return;
     }
 
+    setCrop(undefined);
+    setCompletedCrop(undefined);
     const reader = new FileReader();
     reader.addEventListener('load', () => {
       setImgSrc(reader.result?.toString() || '');
@@ -103,34 +129,56 @@ export default function FileUpload({
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     if (aspectRatio) {
       const { width, height } = e.currentTarget;
-      setCrop(centerAspectCrop(width, height, aspectRatio));
+      const initialCrop = centerAspectCrop(width, height, aspectRatio);
+      setCrop(initialCrop);
+      setCompletedCrop(convertToPixelCrop(initialCrop, width, height));
     }
   };
 
   const generateCroppedBlob = async (): Promise<Blob | null> => {
     const image = imgRef.current;
-    if (!image || !completedCrop) return null;
+    if (!image || !completedCrop || !image.width || !image.height) return null;
+    if (completedCrop.width <= 0 || completedCrop.height <= 0) return null;
 
-    const canvas = document.createElement('canvas');
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
 
-    canvas.width = completedCrop.width;
-    canvas.height = completedCrop.height;
+    const sourceX = Math.max(0, Math.round(completedCrop.x * scaleX));
+    const sourceY = Math.max(0, Math.round(completedCrop.y * scaleY));
+    const sourceWidth = Math.max(
+      1,
+      Math.min(image.naturalWidth - sourceX, Math.round(completedCrop.width * scaleX))
+    );
+    const sourceHeight = Math.max(
+      1,
+      Math.min(image.naturalHeight - sourceY, Math.round(completedCrop.height * scaleY))
+    );
+
+    // Cap overly massive photos at 2560px to stay under Vercel's ~4MB upload payload limit
+    // while keeping native resolution for Full HD / 2K images instead of CSS preview size.
+    const longestSide = Math.max(sourceWidth, sourceHeight);
+    const outputScale =
+      longestSide > MAX_CROP_OUTPUT_DIMENSION ? MAX_CROP_OUTPUT_DIMENSION / longestSide : 1;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(sourceWidth * outputScale));
+    canvas.height = Math.max(1, Math.round(sourceHeight * outputScale));
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(
       image,
-      completedCrop.x * scaleX,
-      completedCrop.y * scaleY,
-      completedCrop.width * scaleX,
-      completedCrop.height * scaleY,
+      sourceX,
+      sourceY,
+      sourceWidth,
+      sourceHeight,
       0,
       0,
-      completedCrop.width,
-      completedCrop.height
+      canvas.width,
+      canvas.height
     );
 
     return new Promise((resolve) => {
@@ -139,14 +187,14 @@ export default function FileUpload({
           resolve(blob);
         },
         'image/webp',
-        0.88
+        CLIENT_WEBP_QUALITY
       );
     });
   };
 
   const handleApplyCrop = async () => {
-    if (!completedCrop) {
-      // If user did not modify crop, upload as is
+    if (!completedCrop || completedCrop.width <= 0 || completedCrop.height <= 0) {
+      // If no active crop region is selected, upload the original image as-is
       if (imgSrc) {
         const res = await fetch(imgSrc);
         const blob = await res.blob();
@@ -158,6 +206,8 @@ export default function FileUpload({
     const croppedBlob = await generateCroppedBlob();
     if (croppedBlob) {
       await uploadDirect(croppedBlob, 'cropped.webp');
+    } else {
+      toast.error('Gagal memproses hasil potongan gambar');
     }
   };
 
@@ -249,10 +299,7 @@ export default function FileUpload({
             </div>
             <button
               type="button"
-              onClick={() => {
-                setIsCroppingOpen(false);
-                setImgSrc('');
-              }}
+              onClick={resetCropper}
               className="text-slate-400 hover:text-slate-600"
             >
               <X size={18} />
@@ -278,15 +325,12 @@ export default function FileUpload({
 
           <div className="flex items-center justify-between pt-2">
             <span className="text-xs text-slate-500">
-              {aspectRatio ? `Rasio terkunci: ${aspectRatio === 1 ? '1:1 (Persegi)' : '16:9 (Landscape)'}` : 'Rasio Bebas'}
+              {formatAspectRatioLabel(aspectRatio)}
             </span>
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setIsCroppingOpen(false);
-                  setImgSrc('');
-                }}
+                onClick={resetCropper}
                 className="px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg"
               >
                 Batal
