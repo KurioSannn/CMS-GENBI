@@ -26,7 +26,7 @@ export const authController = {
     };
 
     const token = generateToken(payload);
-    setAuthCookie(res, token);
+    setAuthCookie(res, token, req);
 
     // Activity Log
     try {
@@ -46,8 +46,8 @@ export const authController = {
     });
   },
 
-  logout(res: NextApiResponse) {
-    clearAuthCookie(res);
+  logout(res: NextApiResponse, req?: NextApiRequest) {
+    clearAuthCookie(res, req);
     return res.status(200).json({ success: true, message: 'Logout berhasil' });
   },
 

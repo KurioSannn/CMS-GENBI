@@ -53,12 +53,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const originalFilename = fileObj.originalFilename || 'upload.bin';
       const ext = path.extname(originalFilename).toLowerCase();
-      const mime = fileObj.mimetype || 'application/octet-stream';
+      const mime = (fileObj.mimetype || 'application/octet-stream').toLowerCase();
       const uniqueId = crypto.randomUUID();
 
-      const isImage =
-        mime.startsWith('image/') ||
-        ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext);
+      const ALLOWED_IMAGE_EXTS = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+      const ALLOWED_DOC_EXTS = ['.pdf', '.doc', '.docx'];
+      const ALLOWED_EXTS = [...ALLOWED_IMAGE_EXTS, ...ALLOWED_DOC_EXTS];
+
+      if (!ALLOWED_EXTS.includes(ext)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Format file tidak diizinkan. Gunakan JPG, PNG, WEBP, GIF, PDF, atau DOC/DOCX.',
+        });
+      }
+
+      const isImage = ALLOWED_IMAGE_EXTS.includes(ext) && (mime === '' || mime.startsWith('image/'));
+      const isDoc =
+        ALLOWED_DOC_EXTS.includes(ext) &&
+        (mime === '' ||
+          mime === 'application/pdf' ||
+          mime === 'application/msword' ||
+          mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+          mime === 'application/octet-stream');
+
+      if (!isImage && !isDoc) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tipe MIME file tidak sesuai dengan ekstensi yang diizinkan.',
+        });
+      }
+
       const isGif = ext === '.gif' || mime === 'image/gif';
 
       let finalFilename = `${uniqueId}${ext}`;

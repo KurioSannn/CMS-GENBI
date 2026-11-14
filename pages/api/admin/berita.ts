@@ -1,32 +1,28 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import articleController from '@/lib/controllers/article.controller';
-import { getAuthUser } from '@/lib/auth';
+import { parsePositiveId, requireAdminUser } from '@/lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const user = getAuthUser(req);
-  if (!user && req.method !== 'GET') {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
+  const user = requireAdminUser(req, res);
+  if (!user) return;
 
   try {
     if (req.method === 'GET') {
       const { slug, id, status } = req.query;
       if (slug) {
         const article = await articleController.getBySlug(String(slug));
-        if (!user && (!article || article.status !== 'PUBLISHED')) {
-          return res.status(404).json({ success: false, message: 'Artikel tidak ditemukan' });
-        }
         return res.status(200).json({ success: true, data: article });
       }
-      if (id) {
-        const article = await articleController.getById(Number(id));
-        if (!user && (!article || article.status !== 'PUBLISHED')) {
-          return res.status(404).json({ success: false, message: 'Artikel tidak ditemukan' });
+      if (id !== undefined) {
+        const parsedId = parsePositiveId(id);
+        if (!parsedId) {
+          return res.status(400).json({ success: false, message: 'ID berita tidak valid' });
         }
+        const article = await articleController.getById(parsedId);
         return res.status(200).json({ success: true, data: article });
       }
-      const effectiveStatus = user ? (status as any) : 'PUBLISHED';
-      const articles = await articleController.getAll(effectiveStatus);
+      const normalizedStatus = status === 'DRAFT' || status === 'PUBLISHED' ? status : undefined;
+      const articles = await articleController.getAll(normalizedStatus);
       return res.status(200).json({ success: true, data: articles });
     }
 
@@ -36,14 +32,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'PUT') {
-      const { id, ...updates } = req.body;
-      const updated = await articleController.update(Number(id), updates, user);
+      const { id, ...updates } = req.body || {};
+      const parsedId = parsePositiveId(id);
+      if (!parsedId) {
+        return res.status(400).json({ success: false, message: 'ID berita tidak valid' });
+      }
+      const updated = await articleController.update(parsedId, updates, user);
       return res.status(200).json({ success: true, data: updated });
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.query;
-      await articleController.delete(Number(id), user);
+      const parsedId = parsePositiveId(req.query.id);
+      if (!parsedId) {
+        return res.status(400).json({ success: false, message: 'ID berita tidak valid' });
+      }
+      await articleController.delete(parsedId, user);
       return res.status(200).json({ success: true, message: 'Berita berhasil dihapus' });
     }
 

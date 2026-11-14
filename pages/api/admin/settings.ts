@@ -1,12 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import settingsController from '@/lib/controllers/settings.controller';
-import { getAuthUser } from '@/lib/auth';
+import { requireAdminUser } from '@/lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const user = getAuthUser(req);
-  if (!user && req.method !== 'GET') {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
+  const user = requireAdminUser(req, res);
+  if (!user) return;
 
   try {
     if (req.method === 'GET') {
