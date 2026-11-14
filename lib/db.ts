@@ -435,6 +435,18 @@ export const jsonDb = {
         (id && u.id === id)
       ) ?? null;
     },
+    updatePassword: async (id: number, passwordHash: string) => {
+      const data = readDb();
+      const idx = data.adminUsers.findIndex(u => u.id === id);
+      if (idx === -1) return null;
+      data.adminUsers[idx] = {
+        ...data.adminUsers[idx],
+        passwordHash,
+        updatedAt: new Date().toISOString(),
+      };
+      writeDb(data);
+      return data.adminUsers[idx];
+    },
   },
 
   // --- BANNERS ---
@@ -840,6 +852,7 @@ export const db: DbRepository = {
   adminUser: {
     findFirst: (predicate) => activeDb().adminUser.findFirst(predicate),
     findUnique: (where) => activeDb().adminUser.findUnique(where),
+    updatePassword: (id, passwordHash) => activeDb().adminUser.updatePassword(id, passwordHash),
   },
   banner: {
     findMany: () => activeDb().banner.findMany(),

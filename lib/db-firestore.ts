@@ -161,6 +161,19 @@ export const firestoreDb = {
         ) ?? null
       );
     },
+    updatePassword: async (id: number, passwordHash: string) => {
+      const firestore = getFirestoreDb();
+      const docRef = firestore.collection(COLLECTIONS.adminUsers).doc(String(id));
+      const snap = await docRef.get();
+      if (!snap.exists) return null;
+      const updated: AdminUser = {
+        ...(snap.data() as AdminUser),
+        passwordHash,
+        updatedAt: new Date().toISOString(),
+      };
+      await docRef.set(updated, { merge: true });
+      return updated;
+    },
   },
 
   // --- BANNERS ---

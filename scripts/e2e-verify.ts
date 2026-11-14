@@ -453,6 +453,47 @@ async function main() {
       }
     });
 
+    // 3b. Change Password
+    await exec('Change password: auth required, validation, wrong current rejected, new works, old fails, restore', async () => {
+      const noAuth = await requestRaw('POST', '/api/auth/change-password', {
+        json: { currentPassword: 'admin123', newPassword: 'NewPassw0rd!' },
+      });
+      assert.equal(noAuth.status, 401, `Unauthenticated change-password returned ${noAuth.status}`);
+
+      const post = (currentPassword: string, newPassword: string) =>
+        requestRaw('POST', '/api/auth/change-password', {
+          cookie: adminCookie,
+          json: { currentPassword, newPassword },
+        });
+
+      assert.equal((await post('admin123', 'short')).status, 400, 'Short password must be rejected');
+      assert.equal((await post('admin123', 'admin123')).status, 400, 'Same password must be rejected');
+      assert.equal((await post('definitely-wrong', 'NewPassw0rd!')).status, 400, 'Wrong current password must be rejected');
+
+      const changed = await post('admin123', 'NewPassw0rd!');
+      assert.equal(changed.status, 200, `Password change failed: ${changed.body}`);
+
+      const oldLogin = await requestRaw('POST', '/api/auth/login', {
+        json: { username: 'admin', password: 'admin123' },
+      });
+      assert.equal(oldLogin.status, 401, 'Old password must no longer work');
+
+      const newLogin = await requestRaw('POST', '/api/auth/login', {
+        json: { username: 'admin', password: 'NewPassw0rd!' },
+      });
+      assert.equal(newLogin.status, 200, 'New password must work');
+
+      const restored = await post('NewPassw0rd!', 'admin123');
+      assert.equal(restored.status, 200, `Restoring original password failed: ${restored.body}`);
+
+      const logs = await requestRaw('GET', '/api/admin/logs?action=UPDATE_PASSWORD', { cookie: adminCookie });
+      assert.equal(logs.status, 200);
+      assert.ok(
+        JSON.parse(logs.body).data.logs.length >= 1,
+        'Expected UPDATE_PASSWORD entry in activity log'
+      );
+    });
+
     // 4. Upload Security & WebP Compression
     await exec('Upload endpoint rejects .html XSS payload (400) and converts PNG -> WebP (200)', async () => {
       const badUpload = await requestRaw('POST', '/api/upload', {
