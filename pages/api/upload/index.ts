@@ -13,15 +13,48 @@ function cleanEnvValue(value?: string): string {
   return (value || '').trim().replace(/^["']|["']$/g, '');
 }
 
-function getVercelBlobToken(): string {
-  return cleanEnvValue(process.env.BLOB_READ_WRITE_TOKEN);
+function findEnvValueBySuffix(suffix: string, expectedPrefix: string): string {
+  for (const [key, rawValue] of Object.entries(process.env)) {
+    if (!key.endsWith(suffix)) continue;
+    const cleaned = cleanEnvValue(rawValue);
+    if (cleaned.startsWith(expectedPrefix)) {
+      return cleaned;
+    }
+  }
+  return '';
 }
 
-function isVercelBlobConfigured(): boolean {
-  return Boolean(
-    getVercelBlobToken() ||
-      (cleanEnvValue(process.env.VERCEL_OIDC_TOKEN) && cleanEnvValue(process.env.BLOB_STORE_ID))
-  );
+function getVercelBlobToken(): string {
+  return cleanEnvValue(process.env.BLOB_READ_WRITE_TOKEN) || findEnvValueBySuffix('_READ_WRITE_TOKEN', 'vercel_blob_rw_');
+}
+
+function getVercelBlobStoreId(): string {
+  return cleanEnvValue(process.env.BLOB_STORE_ID) || findEnvValueBySuffix('_STORE_ID', 'store_');
+}
+
+function getVercelOidcToken(req: NextApiRequest): string {
+  const headerToken = req.headers['x-vercel-oidc-token'];
+  const rawHeader = Array.isArray(headerToken) ? headerToken[0] : headerToken;
+  return cleanEnvValue(rawHeader) || cleanEnvValue(process.env.VERCEL_OIDC_TOKEN);
+}
+
+interface VercelBlobAuthConfig {
+  token?: string;
+  oidcToken?: string;
+  storeId?: string;
+}
+
+function resolveVercelBlobAuth(req: NextApiRequest): VercelBlobAuthConfig | null {
+  const token = getVercelBlobToken();
+  if (token) return { token };
+
+  const oidcToken = getVercelOidcToken(req);
+  const storeId = getVercelBlobStoreId();
+  if (oidcToken && storeId) {
+    return { oidcToken, storeId };
+  }
+
+  return null;
 }
 
 function isServerlessRuntime(): boolean {
@@ -124,7 +157,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       contentType = 'image/webp';
       fileBuffer = await sharp(fileObj.filepath)
         .rotate()
-        .webp({ quality: 82 })
+        .webp({ quality: 90 })
         .toBuffer();
     } else {
       fileBuffer = await fs.promises.readFile(fileObj.filepath);
@@ -136,14 +169,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     let returnUrl = '';
     let storageProvider: 'vercel-blob' | 'firebase' | 'local' = 'local';
 
-    if (isVercelBlobConfigured()) {
-      const token = getVercelBlobToken();
+    const blobAuth = resolveVercelBlobAuth(req);
+
+    if (blobAuth) {
       const blob = await put(storagePath, fileBuffer, {
         access: 'public',
         addRandomSuffix: false,
         contentType,
         cacheControlMaxAge: 60 * 60 * 24 * 365,
-        ...(token ? { token } : {}),
+        ...blobAuth,
       });
       returnUrl = blob.url;
       storageProvider = 'vercel-blob';

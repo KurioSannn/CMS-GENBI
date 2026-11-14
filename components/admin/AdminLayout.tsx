@@ -22,7 +22,7 @@ import { Toaster, toast } from 'sonner';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
-  title: string;
+  title?: string;
   subtitle?: string;
   action?: React.ReactNode;
 }
@@ -75,7 +75,7 @@ const navigationGroups: NavGroup[] = [
   },
 ];
 
-export default function AdminLayout({ children, title, subtitle, action }: AdminLayoutProps) {
+export default function AdminLayout({ children, action }: AdminLayoutProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; role: string; username: string } | null>(null);
@@ -237,33 +237,21 @@ export default function AdminLayout({ children, title, subtitle, action }: Admin
 
       {/* ================= MAIN WORKSPACE ================= */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Clean Top Header with Subtle Gradient Accent */}
-        <header className="h-16 bg-white border-b border-slate-200/80 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-30 shadow-sm">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
-            >
-              <Menu size={18} />
-            </button>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-[#0B1F40] to-[#0284C7] uppercase">
-                  GENBI UPNVJT
-                </span>
-                <span className="text-slate-300">•</span>
-                <span className="text-[10px] font-medium text-slate-400">Panel Pengurus</span>
-              </div>
-              <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">{title}</h1>
-              {subtitle && (
-                <p className="hidden sm:block text-xs text-slate-500 font-medium mt-0.5 max-w-2xl truncate">{subtitle}</p>
-              )}
-            </div>
-          </div>
+        {/* Clean Top Action Bar */}
+        <header
+          className={`h-14 bg-white border-b border-slate-200/80 px-6 sm:px-8 items-center justify-between sticky top-0 z-30 shadow-sm ${
+            action ? 'flex' : 'flex lg:hidden'
+          }`}
+        >
+          <button
+            onClick={() => setMobileOpen(true)}
+            aria-label="Buka navigasi admin"
+            className="lg:hidden p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50"
+          >
+            <Menu size={18} />
+          </button>
 
-          <div className="flex items-center gap-3">
-            {action}
-          </div>
+          {action && <div className="flex items-center gap-3 ml-auto">{action}</div>}
         </header>
 
         {/* Workspace Canvas */}
