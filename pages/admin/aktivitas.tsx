@@ -1,21 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { 
   Activity, 
   Search, 
-  Filter, 
-  Calendar, 
   Clock, 
-  User, 
-  ShieldCheck, 
   RefreshCw,
   PlusCircle,
   Edit,
   Trash2,
-  LogIn,
-  Layers,
-  ArrowUpRight
+  LogIn
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 
@@ -50,11 +44,11 @@ export default function AdminAktivitasPage() {
   const [search, setSearch] = useState('');
   const [selectedAction, setSelectedAction] = useState('ALL');
 
-  const fetchLogs = () => {
+  const loadLogs = useCallback((actionVal: string, searchVal: string) => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (selectedAction !== 'ALL') params.append('action', selectedAction);
-    if (search.trim()) params.append('search', search.trim());
+    if (actionVal !== 'ALL') params.append('action', actionVal);
+    if (searchVal.trim()) params.append('search', searchVal.trim());
     params.append('limit', '100');
 
     fetch(`/api/admin/logs?${params.toString()}`)
@@ -67,11 +61,16 @@ export default function AdminAktivitasPage() {
       })
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
-  };
+  }, []);
+
+  const searchRef = useRef(search);
+  searchRef.current = search;
+
+  const fetchLogs = () => loadLogs(selectedAction, search);
 
   useEffect(() => {
-    fetchLogs();
-  }, [selectedAction]);
+    loadLogs(selectedAction, searchRef.current);
+  }, [selectedAction, loadLogs]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();

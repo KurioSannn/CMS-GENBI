@@ -2,20 +2,16 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/components/admin/AdminLayout';
 import {
-  Tag,
   Plus,
   Search,
-  Filter,
   Edit2,
   Trash2,
-  CheckCircle2,
   AlertCircle,
   FileText,
   Newspaper,
-  FolderTree,
   X,
-  Layers,
 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface CategoryItem {
@@ -54,7 +50,7 @@ export default function AdminKategoriPage() {
       const res = await fetch('/api/admin/category');
       const json = await res.json();
       if (json.success) setCategories(json.data);
-    } catch (e) {
+    } catch {
       toast.error('Gagal memuat master kategori');
     } finally {
       setLoading(false);
@@ -112,8 +108,8 @@ export default function AdminKategoriPage() {
       } else {
         toast.error(json.message || 'Gagal menyimpan kategori');
       }
-    } catch (err: any) {
-      toast.error(err.message || 'Terjadi kesalahan sistem');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -134,8 +130,8 @@ export default function AdminKategoriPage() {
       } else {
         toast.error(json.message || 'Gagal menghapus kategori');
       }
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menghapus kategori');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menghapus kategori'));
     }
   };
 
@@ -391,7 +387,7 @@ export default function AdminKategoriPage() {
             <h3 className="font-black text-slate-900 text-base mb-1">Konfirmasi Hapus</h3>
             <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Apakah Anda yakin ingin menghapus kategori{' '}
-              <span className="font-bold text-slate-800">"{targetDelete.name}"</span>? Tindakan ini tidak dapat
+              <span className="font-bold text-slate-800">&quot;{targetDelete.name}&quot;</span>? Tindakan ini tidak dapat
               dibatalkan.
             </p>
             <div className="flex items-center justify-center gap-2.5">

@@ -7,6 +7,7 @@ import {
   mergeSiteSettings,
   SiteSettings,
 } from '@/lib/site-settings';
+import { getErrorMessage } from '@/lib/utils';
 import {
   Megaphone,
   BarChart3,
@@ -61,8 +62,8 @@ export default function AdminPengaturanPage() {
       }
       setSettings(mergeSiteSettings(json.data));
       toast.success('Pengaturan landing page berhasil disimpan');
-    } catch (err: any) {
-      toast.error(err?.message || 'Gagal menyimpan pengaturan');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan pengaturan'));
     } finally {
       setSaving(false);
     }

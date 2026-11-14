@@ -10,11 +10,9 @@ import {
   Plus,
   ExternalLink,
   ArrowRight,
-  Sparkles,
   Image as ImageIcon,
   Tag,
   Calendar,
-  CheckCircle2,
   Download,
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';

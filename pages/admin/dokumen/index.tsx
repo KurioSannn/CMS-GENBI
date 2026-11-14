@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/components/admin/AdminLayout';
-import FileUpload from '@/components/admin/FileUpload';
 import {
   Plus,
   Trash2,
   FileText,
-  ExternalLink,
   Download,
   Loader2,
   Search,
@@ -15,10 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Edit2,
-  FileCheck,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface DocumentArchive {
@@ -60,7 +56,7 @@ export default function AdminDokumenPage() {
       const res = await fetch('/api/admin/dokumen');
       const json = await res.json();
       if (json.success) setDocuments(json.data);
-    } catch (e) {
+    } catch {
       toast.error('Gagal mengambil dokumen');
     } finally {
       setLoading(false);
@@ -82,7 +78,7 @@ export default function AdminDokumenPage() {
           { name: 'AD/ART & Tata Tertib', slug: 'ad-art' },
         ]);
       }
-    } catch (e) {
+    } catch {
       setCategories([
         { name: 'SK & Surat Keputusan', slug: 'sk-resmi' },
         { name: 'Laporan Pertanggungjawaban (LPJ)', slug: 'lpj-divisi' },
@@ -132,8 +128,8 @@ export default function AdminDokumenPage() {
       toast.success('Dokumen berhasil diunggah ke arsip');
       setModalOpen(false);
       fetchDocuments();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan dokumen');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan dokumen'));
     } finally {
       setSaving(false);
     }
@@ -151,8 +147,8 @@ export default function AdminDokumenPage() {
       setDeleteModalOpen(false);
       setTargetDelete(null);
       fetchDocuments();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus dokumen');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus dokumen'));
     }
   };
 
@@ -449,7 +445,7 @@ export default function AdminDokumenPage() {
             <h3 className="font-black text-slate-900 text-base mb-1">Konfirmasi Hapus Dokumen</h3>
             <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Apakah Anda yakin ingin menghapus berkas arsip{' '}
-              <span className="font-bold text-slate-800">"{targetDelete.title}"</span>? Berkas tidak akan dapat diunduh
+              <span className="font-bold text-slate-800">&quot;{targetDelete.title}&quot;</span>? Berkas tidak akan dapat diunduh
               lagi oleh publik.
             </p>
             <div className="flex items-center justify-center gap-2.5">

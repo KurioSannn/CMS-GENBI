@@ -3,6 +3,7 @@ import Head from 'next/head';
 import AdminLayout from '@/components/admin/AdminLayout';
 import FileUpload from '@/components/admin/FileUpload';
 import { exportToCsv } from '@/lib/export';
+import { getErrorMessage } from '@/lib/utils';
 import {
   Plus,
   Edit2,
@@ -63,7 +64,7 @@ export default function AdminPrestasiPage() {
       const res = await fetch('/api/admin/prestasi');
       const json = await res.json();
       if (json.success) setAchievements(json.data);
-    } catch (e) {
+    } catch {
       toast.error('Gagal mengambil data prestasi');
     } finally {
       setLoading(false);
@@ -137,8 +138,8 @@ export default function AdminPrestasiPage() {
       toast.success(editingId ? 'Prestasi berhasil diperbarui' : 'Prestasi baru berhasil ditambahkan');
       setModalOpen(false);
       fetchAchievements();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan prestasi');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan prestasi'));
     } finally {
       setSaving(false);
     }
@@ -156,8 +157,8 @@ export default function AdminPrestasiPage() {
       setDeleteModalOpen(false);
       setTargetDelete(null);
       fetchAchievements();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus prestasi');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus prestasi'));
     }
   };
 
@@ -245,8 +246,8 @@ export default function AdminPrestasiPage() {
         ]
       );
       toast.success('Rekap data prestasi berhasil diunduh (CSV/Excel)');
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal mengekspor data');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal mengekspor data'));
     }
   };
 
@@ -373,7 +374,7 @@ export default function AdminPrestasiPage() {
                               alt={item.title}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                (e.target as any).src = '/prestasi-1.jpg';
+                                e.currentTarget.src = '/prestasi-1.jpg';
                               }}
                             />
                           </div>
@@ -611,7 +612,7 @@ export default function AdminPrestasiPage() {
             <h3 className="font-black text-slate-900 text-base mb-1">Konfirmasi Hapus Prestasi</h3>
             <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Apakah Anda yakin ingin menghapus data prestasi{' '}
-              <span className="font-bold text-slate-800">"{targetDelete.title}"</span>? Tindakan ini tidak dapat dibatalkan.
+              <span className="font-bold text-slate-800">&quot;{targetDelete.title}&quot;</span>? Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex items-center justify-center gap-2.5">
               <button

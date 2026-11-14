@@ -2,8 +2,9 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { UploadCloud, X, Check, Crop as CropIcon, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { UploadCloud, X, Check, Crop as CropIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 
 interface FileUploadProps {
   value?: string | null;
@@ -47,27 +48,7 @@ export default function FileUpload({
   const [isCroppingOpen, setIsCroppingOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const onSelectFile = (file: File) => {
-    if (file.type === 'application/pdf') {
-      // Direct upload for PDF
-      uploadDirect(file);
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Format file tidak didukung');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.addEventListener('load', () => {
-      setImgSrc(reader.result?.toString() || '');
-      setIsCroppingOpen(true);
-    });
-    reader.readAsDataURL(file);
-  };
-
-  const uploadDirect = async (file: File | Blob, filename: string = 'file.webp') => {
+  const uploadDirect = useCallback(async (file: File | Blob, filename: string = 'file.webp') => {
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file, filename);
@@ -87,12 +68,32 @@ export default function FileUpload({
       toast.success('File berhasil diunggah!');
       setIsCroppingOpen(false);
       setImgSrc('');
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal mengunggah file');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal mengunggah file'));
     } finally {
       setIsUploading(false);
     }
-  };
+  }, [onChange, scope]);
+
+  const onSelectFile = useCallback((file: File) => {
+    if (file.type === 'application/pdf') {
+      // Direct upload for PDF
+      uploadDirect(file);
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('Format file tidak didukung');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      setImgSrc(reader.result?.toString() || '');
+      setIsCroppingOpen(true);
+    });
+    reader.readAsDataURL(file);
+  }, [uploadDirect]);
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     if (aspectRatio) {
@@ -159,7 +160,7 @@ export default function FileUpload({
     if (acceptedFiles.length > 0) {
       onSelectFile(acceptedFiles[0]);
     }
-  }, []);
+  }, [onSelectFile]);
 
   const acceptConfig: Record<string, string[]> = acceptPdf
     ? {

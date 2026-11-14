@@ -14,12 +14,12 @@ import {
   List,
   Building2,
   AlertCircle,
-  X,
   Instagram,
   Linkedin,
   Loader2,
   Download,
 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 // ================= TYPES =================
@@ -64,7 +64,6 @@ export default function AdminStrukturPage() {
   const [activeTab, setActiveTab] = useState<string | number>('BPH');
 
   // Loading states
-  const [loadingDiv, setLoadingDiv] = useState(true);
   const [loadingBph, setLoadingBph] = useState(true);
 
   // Data states
@@ -137,10 +136,8 @@ export default function AdminStrukturPage() {
         );
         setDivisions(operational);
       }
-    } catch (e) {
+    } catch {
       toast.error('Gagal memuat divisi');
-    } finally {
-      setLoadingDiv(false);
     }
   };
 
@@ -150,7 +147,7 @@ export default function AdminStrukturPage() {
       const res = await fetch('/api/admin/bph');
       const json = await res.json();
       if (json.success) setBphMembers(json.data);
-    } catch (e) {
+    } catch {
       toast.error('Gagal memuat data BPH');
     } finally {
       setLoadingBph(false);
@@ -225,8 +222,8 @@ export default function AdminStrukturPage() {
       toast.success(editingBphId ? 'Data pengurus BPH diperbarui' : 'Pengurus BPH berhasil ditambahkan');
       setBphModalOpen(false);
       fetchBphMembers();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan data BPH');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan data BPH'));
     } finally {
       setSaving(false);
     }
@@ -243,8 +240,8 @@ export default function AdminStrukturPage() {
       setDeleteModalOpen(false);
       setTargetDeleteBph(null);
       fetchBphMembers();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus'));
     }
   };
 
@@ -317,8 +314,8 @@ export default function AdminStrukturPage() {
       toast.success(editingDivId ? 'Divisi diperbarui' : 'Divisi ditambahkan');
       setDivModalOpen(false);
       fetchDivisions();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan divisi');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan divisi'));
     } finally {
       setSaving(false);
     }
@@ -380,8 +377,8 @@ export default function AdminStrukturPage() {
       toast.success(isEdit ? 'Anggota divisi diperbarui' : 'Anggota divisi ditambahkan');
       setMemberModalOpen(false);
       fetchDivisions();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan anggota');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan anggota'));
     } finally {
       setSaving(false);
     }
@@ -400,8 +397,8 @@ export default function AdminStrukturPage() {
       setDeleteModalOpen(false);
       setTargetDeleteMember(null);
       fetchDivisions();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus anggota');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus anggota'));
     }
   };
 
@@ -419,8 +416,8 @@ export default function AdminStrukturPage() {
       setTargetDeleteDivision(null);
       setActiveTab('BPH');
       fetchDivisions();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus divisi');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus divisi'));
     }
   };
 
@@ -473,8 +470,8 @@ export default function AdminStrukturPage() {
         );
         toast.success(`Data anggota divisi "${selectedDivision.name}" berhasil diunduh`);
       }
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal mengekspor data');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal mengekspor data'));
     }
   };
 
@@ -633,7 +630,7 @@ export default function AdminStrukturPage() {
                                 alt={m.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  (e.target as any).src = '/carousel-1.jpg';
+                                  e.currentTarget.src = '/carousel-1.jpg';
                                 }}
                               />
                             </div>
@@ -745,7 +742,7 @@ export default function AdminStrukturPage() {
                                 alt={m.name}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  (e.target as any).src = '/carousel-1.jpg';
+                                  e.currentTarget.src = '/carousel-1.jpg';
                                 }}
                               />
                             </div>
@@ -965,7 +962,7 @@ export default function AdminStrukturPage() {
                                     alt={m.name}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                      (e.target as any).src = '/foto profile genbiupnvjt.png';
+                                      e.currentTarget.src = '/foto profile genbiupnvjt.png';
                                     }}
                                   />
                                 </div>
@@ -1035,7 +1032,7 @@ export default function AdminStrukturPage() {
                             alt={m.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as any).src = '/foto profile genbiupnvjt.png';
+                              e.currentTarget.src = '/foto profile genbiupnvjt.png';
                             }}
                           />
                         </div>
@@ -1381,13 +1378,13 @@ export default function AdminStrukturPage() {
             <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Apakah Anda yakin ingin menghapus{' '}
               <span className="font-bold text-slate-800">
-                "
+                &quot;
                 {deleteType === 'bph'
                   ? targetDeleteBph?.name
                   : deleteType === 'division'
                   ? targetDeleteDivision?.name
                   : targetDeleteMember?.name}
-                "
+                &quot;
               </span>
               {deleteType === 'division'
                 ? ' beserta seluruh anggota di dalamnya? Tindakan ini tidak dapat dibatalkan.'

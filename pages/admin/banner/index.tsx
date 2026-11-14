@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/components/admin/AdminLayout';
 import FileUpload from '@/components/admin/FileUpload';
-import { Plus, Edit2, Trash2, CheckCircle2, XCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface Banner {
@@ -37,7 +38,7 @@ export default function AdminBannerPage() {
       const res = await fetch('/api/admin/banner');
       const json = await res.json();
       if (json.success) setBanners(json.data);
-    } catch (e) {
+    } catch {
       toast.error('Gagal mengambil data banner');
     } finally {
       setLoading(false);
@@ -105,8 +106,8 @@ export default function AdminBannerPage() {
       toast.success(editingId ? 'Banner berhasil diperbarui' : 'Banner berhasil ditambahkan');
       setModalOpen(false);
       fetchBanners();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan'));
     } finally {
       setSaving(false);
     }
@@ -122,8 +123,8 @@ export default function AdminBannerPage() {
 
       toast.success('Banner dihapus');
       fetchBanners();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus'));
     }
   };
 

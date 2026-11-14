@@ -10,8 +10,6 @@ import {
   Edit2,
   Trash2,
   ExternalLink,
-  Calendar,
-  User,
   Loader2,
   Search,
   AlertCircle,
@@ -21,9 +19,8 @@ import {
   Eye,
   Download,
   Clock,
-  FileText,
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface Article {
@@ -74,7 +71,7 @@ export default function AdminBeritaPage() {
       const res = await fetch('/api/admin/berita');
       const json = await res.json();
       if (json.success) setArticles(json.data);
-    } catch (e) {
+    } catch {
       toast.error('Gagal mengambil data berita');
     } finally {
       setLoading(false);
@@ -96,7 +93,7 @@ export default function AdminBeritaPage() {
           { name: 'Opini & Artikel Anggota', slug: 'opini-anggota' },
         ]);
       }
-    } catch (e) {
+    } catch {
       setCategories([
         { name: 'Edukasi BI & CBP Rupiah', slug: 'edukasi-bi' },
         { name: 'Sosial Lingkungan', slug: 'sosial-lingkungan' },
@@ -143,8 +140,8 @@ export default function AdminBeritaPage() {
     return `${minutes} menit baca`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!title || !excerpt || !content || !coverImage) {
       toast.error('Judul, ringkasan, cover foto, dan isi artikel wajib diisi');
       return;
@@ -176,8 +173,8 @@ export default function AdminBeritaPage() {
       toast.success(editingId ? 'Artikel berhasil diperbarui' : 'Artikel baru berhasil diterbitkan');
       setModalOpen(false);
       fetchArticles();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan artikel');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan artikel'));
     } finally {
       setSaving(false);
     }
@@ -195,8 +192,8 @@ export default function AdminBeritaPage() {
       setDeleteModalOpen(false);
       setTargetDelete(null);
       fetchArticles();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus artikel');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus artikel'));
     }
   };
 
@@ -217,8 +214,8 @@ export default function AdminBeritaPage() {
         ]
       );
       toast.success('Data artikel berita berhasil diunduh (CSV/Excel)');
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal mengekspor data');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal mengekspor data'));
     }
   };
 
@@ -341,7 +338,7 @@ export default function AdminBeritaPage() {
                             alt={article.title}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as any).src = '/GenBI Webinar Career.png';
+                              e.currentTarget.src = '/GenBI Webinar Career.png';
                             }}
                           />
                         </div>
@@ -532,7 +529,7 @@ export default function AdminBeritaPage() {
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">Status Publikasi</label>
                     <select
                       value={status}
-                      onChange={(e) => setStatus(e.target.value as any)}
+                      onChange={(e) => setStatus(e.target.value as 'DRAFT' | 'PUBLISHED')}
                       className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-900 bg-white focus:outline-none focus:ring-2 focus:ring-[#0284C7]/30"
                     >
                       <option value="PUBLISHED">PUBLISHED (Tayang Publik)</option>
@@ -652,7 +649,7 @@ export default function AdminBeritaPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={handleSubmit as any}
+                    onClick={() => handleSubmit()}
                     disabled={saving}
                     className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#0284C7] via-[#0EA5E9] to-[#38BDF8] text-white text-xs font-bold shadow-sm shadow-sky-500/25"
                   >
@@ -675,7 +672,7 @@ export default function AdminBeritaPage() {
             <h3 className="font-black text-slate-900 text-base mb-1">Konfirmasi Hapus Berita</h3>
             <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Apakah Anda yakin ingin menghapus artikel{' '}
-              <span className="font-bold text-slate-800">"{targetDelete.title}"</span>? Tindakan ini tidak dapat dibatalkan.
+              <span className="font-bold text-slate-800">&quot;{targetDelete.title}&quot;</span>? Tindakan ini tidak dapat dibatalkan.
             </p>
             <div className="flex items-center justify-center gap-2.5">
               <button

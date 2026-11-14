@@ -5,7 +5,6 @@ import {
   LayoutDashboard,
   Image as ImageIcon,
   Users,
-  ShieldAlert,
   Newspaper,
   Trophy,
   FileText,
@@ -14,10 +13,6 @@ import {
   ExternalLink,
   Menu,
   X,
-  ChevronRight,
-  ShieldCheck,
-  Bell,
-  Sparkles,
   Loader2,
   SlidersHorizontal,
   Activity,
@@ -78,7 +73,7 @@ const navigationGroups: NavGroup[] = [
   },
 ];
 
-export default function AdminLayout({ children, title, subtitle, action }: AdminLayoutProps) {
+export default function AdminLayout({ children, title, action }: AdminLayoutProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; role: string; username: string } | null>(null);
@@ -110,7 +105,7 @@ export default function AdminLayout({ children, title, subtitle, action }: Admin
       setTimeout(() => {
         window.location.href = '/admin/login';
       }, 300);
-    } catch (e) {
+    } catch {
       window.location.href = '/admin/login';
     }
   };
@@ -152,7 +147,7 @@ export default function AdminLayout({ children, title, subtitle, action }: Admin
               <span className="font-extrabold text-slate-900 text-sm tracking-tight flex items-center gap-1">
                 GenBI<span className="text-[#0284C7]">Hub</span>
               </span>
-              <span className="text-[10px] text-slate-400 font-medium">UPN "Veteran" Jatim</span>
+              <span className="text-[10px] text-slate-400 font-medium">UPN &quot;Veteran&quot; Jatim</span>
             </div>
           </Link>
           <button

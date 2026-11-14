@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { getErrorMessage } from '@/lib/utils';
 import { Toaster, toast } from 'sonner';
 
 export default function AdminLoginPage() {
-  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -35,8 +34,8 @@ export default function AdminLoginPage() {
       setTimeout(() => {
         window.location.href = '/admin';
       }, 350);
-    } catch (err: any) {
-      toast.error(err.message || 'Username atau kata sandi salah');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Username atau kata sandi salah'));
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +62,7 @@ export default function AdminLoginPage() {
               <span className="font-extrabold text-slate-900 text-base tracking-tight flex items-center gap-1.5">
                 GenBI<span className="text-[#0284C7]">Hub</span>
               </span>
-              <p className="text-xs text-slate-500 font-medium">UPN "Veteran" Jawa Timur</p>
+              <p className="text-xs text-slate-500 font-medium">UPN &quot;Veteran&quot; Jawa Timur</p>
             </div>
           </div>
 
@@ -208,7 +207,7 @@ export default function AdminLoginPage() {
 
           {/* Bottom Footer */}
           <footer className="text-center py-2 text-xs text-slate-400">
-            © {new Date().getFullYear()} Generasi Baru Indonesia • UPN "Veteran" Jawa Timur
+            © {new Date().getFullYear()} Generasi Baru Indonesia • UPN &quot;Veteran&quot; Jawa Timur
           </footer>
         </div>
       </div>
