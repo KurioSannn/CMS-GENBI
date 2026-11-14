@@ -25,10 +25,10 @@ interface HttpRes {
 function requestRaw(
   method: string,
   reqPath: string,
-  options?: { cookie?: string; json?: unknown; form?: { filename: string; contentType: string; data: Buffer; scope: string } }
+  options?: { cookie?: string; json?: unknown; headers?: Record<string, string>; form?: { filename: string; contentType: string; data: Buffer; scope: string } }
 ): Promise<HttpRes> {
   return new Promise((resolve, reject) => {
-    const headers: Record<string, string | number> = {};
+    const headers: Record<string, string | number> = { ...(options?.headers || {}) };
     if (options?.cookie) headers['Cookie'] = options.cookie;
 
     let bodyBuf: Buffer | undefined;
@@ -103,6 +103,7 @@ async function startServer() {
     env: {
       ...process.env,
       DB_PROVIDER: 'json',
+      TRUST_PROXY: '',
       // Secret acak per-run agar test tidak bergantung pada SESSION_SECRET di .env developer
       SESSION_SECRET: crypto.randomBytes(48).toString('hex'),
     },
@@ -218,6 +219,35 @@ async function main() {
       // Local HTTP should not set Secure flag that browsers drop over plain HTTP
       const setCookieRaw = String(good.headers['set-cookie'] || '');
       assert.ok(!setCookieRaw.includes('; Secure'), 'Unexpected Secure flag on plain HTTP request');
+    });
+
+    await exec('Login brute-force is rate limited (429 + Retry-After) without locking other users', async () => {
+      const target = 'bruteforce-target';
+      for (let i = 0; i < 5; i++) {
+        const attempt = await requestRaw('POST', '/api/auth/login', {
+          json: { username: target, password: `wrong-${i}` },
+        });
+        assert.equal(attempt.status, 401, `Attempt ${i + 1} should be 401, got ${attempt.status}`);
+      }
+
+      const blocked = await requestRaw('POST', '/api/auth/login', {
+        json: { username: target, password: 'wrong-again' },
+      });
+      assert.equal(blocked.status, 429, `Expected 429 after 5 failures, got ${blocked.status}`);
+      assert.ok(Number(blocked.headers['retry-after']) > 0, 'Missing Retry-After header');
+
+      // Spoofed X-Forwarded-For must not bypass the limit when TRUST_PROXY is not enabled
+      const spoofed = await requestRaw('POST', '/api/auth/login', {
+        json: { username: target, password: 'wrong-again' },
+        headers: { 'x-forwarded-for': '203.0.113.77' },
+      });
+      assert.equal(spoofed.status, 429, 'X-Forwarded-For spoofing bypassed the rate limit');
+
+      // Another username from the same IP is unaffected (valid admin can still log in)
+      const other = await requestRaw('POST', '/api/auth/login', {
+        json: { username: 'admin', password: 'admin123' },
+      });
+      assert.equal(other.status, 200, `Valid admin login blocked unexpectedly (${other.status})`);
     });
 
     await exec('Authenticated session reaches /api/auth/me, /admin, and redirects /admin/login -> /admin', async () => {
