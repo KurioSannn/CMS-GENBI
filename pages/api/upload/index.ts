@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import sharp from 'sharp';
 import crypto from 'crypto';
 import { getAuthUser } from '@/lib/auth';
+import { getStorageBucket, isFirebaseStorageConfigured } from '@/lib/firebase-admin';
 
 export const config = {
   api: {
@@ -17,13 +19,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ success: false, message: 'Method not allowed' });
   }
 
-  // Check auth
   const user = getAuthUser(req);
   if (!user) {
     return res.status(401).json({ success: false, message: 'Harap login terlebih dahulu' });
   }
 
-  const uploadTempDir = path.join(process.cwd(), 'public', 'uploads', 'tmp');
+  const uploadTempDir = path.join(os.tmpdir(), 'genbihub-uploads');
   if (!fs.existsSync(uploadTempDir)) {
     fs.mkdirSync(uploadTempDir, { recursive: true });
   }
@@ -41,54 +42,79 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ success: false, message: 'Gagal memproses file upload' });
     }
 
+    const fileObj = Array.isArray(files.file) ? files.file[0] : files.file;
+    if (!fileObj) {
+      return res.status(400).json({ success: false, message: 'Tidak ada file yang diunggah' });
+    }
+
     try {
       const scopeField = Array.isArray(fields.scope) ? fields.scope[0] : fields.scope;
-      const scope = (scopeField || 'general').replace(/[^a-zA-Z0-9_-]/g, '');
-
-      const fileObj = Array.isArray(files.file) ? files.file[0] : files.file;
-      if (!fileObj) {
-        return res.status(400).json({ success: false, message: 'Tidak ada file yang diunggah' });
-      }
+      const scope = (scopeField || 'general').replace(/[^a-zA-Z0-9_-]/g, '') || 'general';
 
       const originalFilename = fileObj.originalFilename || 'upload.bin';
       const ext = path.extname(originalFilename).toLowerCase();
-      const mime = fileObj.mimetype || '';
+      const mime = fileObj.mimetype || 'application/octet-stream';
       const uniqueId = crypto.randomUUID();
 
-      const targetDir = path.join(process.cwd(), 'public', 'uploads', scope);
-      if (!fs.existsSync(targetDir)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-      }
-
-      let finalFilename = `${uniqueId}${ext}`;
-      let finalPath = path.join(targetDir, finalFilename);
-      let returnUrl = `/uploads/${scope}/${finalFilename}`;
-
-      const isImage = mime.startsWith('image/') || ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext);
+      const isImage =
+        mime.startsWith('image/') ||
+        ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext);
       const isGif = ext === '.gif' || mime === 'image/gif';
 
+      let finalFilename = `${uniqueId}${ext}`;
+      let contentType = mime;
+      let fileBuffer: Buffer;
+
       if (isImage && !isGif) {
-        // Convert to WebP via Sharp for superior performance & compression
+        // Compress & convert images (non-GIF) to WebP via Sharp
         finalFilename = `${uniqueId}.webp`;
-        finalPath = path.join(targetDir, finalFilename);
-        returnUrl = `/uploads/${scope}/${finalFilename}`;
-
-        await sharp(fileObj.filepath)
-          .rotate() // Auto-orient according to EXIF
+        contentType = 'image/webp';
+        fileBuffer = await sharp(fileObj.filepath)
+          .rotate()
           .webp({ quality: 82 })
-          .toFile(finalPath);
-
-        // Remove temp file
-        try {
-          fs.unlinkSync(fileObj.filepath);
-        } catch (e) {}
+          .toBuffer();
       } else {
-        // PDF or GIF or other files: move as-is
-        fs.renameSync(fileObj.filepath, finalPath);
+        fileBuffer = await fs.promises.readFile(fileObj.filepath);
       }
 
-      const fileStats = fs.statSync(finalPath);
-      const sizeInMb = (fileStats.size / (1024 * 1024)).toFixed(1);
+      const fileSize = fileBuffer.byteLength;
+      const sizeInMb = (fileSize / (1024 * 1024)).toFixed(1);
+      let returnUrl = '';
+      let storageProvider: 'firebase' | 'local' = 'local';
+
+      if (isFirebaseStorageConfigured()) {
+        const bucket = getStorageBucket();
+        const storagePath = `uploads/${scope}/${finalFilename}`;
+        const downloadToken = crypto.randomUUID();
+        const storageFile = bucket.file(storagePath);
+
+        await storageFile.save(fileBuffer, {
+          resumable: false,
+          contentType,
+          metadata: {
+            contentType,
+            cacheControl: 'public, max-age=31536000',
+            metadata: {
+              firebaseStorageDownloadTokens: downloadToken,
+              originalName: originalFilename,
+            },
+          },
+        });
+
+        returnUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(
+          storagePath
+        )}?alt=media&token=${downloadToken}`;
+        storageProvider = 'firebase';
+      } else {
+        // Fallback penyimpanan lokal untuk dev offline / VPS tanpa bucket
+        const targetDir = path.join(process.cwd(), 'public', 'uploads', scope);
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        const finalPath = path.join(targetDir, finalFilename);
+        await fs.promises.writeFile(finalPath, fileBuffer);
+        returnUrl = `/uploads/${scope}/${finalFilename}`;
+      }
 
       return res.status(200).json({
         success: true,
@@ -96,13 +122,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           url: returnUrl,
           filename: finalFilename,
           originalName: originalFilename,
-          size: fileStats.size,
+          size: fileSize,
           sizeFormatted: `${sizeInMb} MB`,
+          storage: storageProvider,
         },
       });
     } catch (processError: any) {
       console.error('File processing error:', processError);
-      return res.status(500).json({ success: false, message: 'Gagal memproses dan mengompres file' });
+      return res.status(500).json({
+        success: false,
+        message: 'Gagal memproses dan mengunggah file',
+      });
+    } finally {
+      try {
+        if (fileObj?.filepath && fs.existsSync(fileObj.filepath)) {
+          await fs.promises.unlink(fileObj.filepath);
+        }
+      } catch {
+        // Non-blocking temp cleanup
+      }
     }
   });
 }
