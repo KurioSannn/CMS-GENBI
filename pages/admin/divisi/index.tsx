@@ -107,9 +107,10 @@ export default function AdminStrukturPage() {
 
   // Generic Delete Modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [deleteType, setDeleteType] = useState<'bph' | 'divMember' | null>(null);
+  const [deleteType, setDeleteType] = useState<'bph' | 'divMember' | 'division' | null>(null);
   const [targetDeleteBph, setTargetDeleteBph] = useState<BphMember | null>(null);
   const [targetDeleteMember, setTargetDeleteMember] = useState<DivisionMember | null>(null);
+  const [targetDeleteDivision, setTargetDeleteDivision] = useState<Division | null>(null);
 
   const [saving, setSaving] = useState(false);
 
@@ -401,6 +402,25 @@ export default function AdminStrukturPage() {
       fetchDivisions();
     } catch (e: any) {
       toast.error(e.message || 'Gagal menghapus anggota');
+    }
+  };
+
+  const handleDeleteDivision = async () => {
+    if (!targetDeleteDivision) return;
+    try {
+      const res = await fetch(`/api/admin/divisi?id=${targetDeleteDivision.id}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.message);
+
+      toast.success(`Divisi "${targetDeleteDivision.name}" berhasil dihapus`);
+      setDeleteModalOpen(false);
+      setTargetDeleteDivision(null);
+      setActiveTab('BPH');
+      fetchDivisions();
+    } catch (e: any) {
+      toast.error(e.message || 'Gagal menghapus divisi');
     }
   };
 
@@ -844,13 +864,26 @@ export default function AdminStrukturPage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => openEditDivModal(selectedDivision)}
-                className="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 shrink-0 transition-all"
-              >
-                <Edit2 size={13} /> Edit Info Divisi
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => openEditDivModal(selectedDivision)}
+                  className="px-3.5 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 transition-all"
+                >
+                  <Edit2 size={13} /> Edit Info Divisi
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTargetDeleteDivision(selectedDivision);
+                    setDeleteType('division');
+                    setDeleteModalOpen(true);
+                  }}
+                  className="px-3.5 py-2 rounded-xl border border-red-200 bg-red-50/70 hover:bg-red-100 text-xs font-bold text-red-600 flex items-center gap-1.5 transition-all"
+                >
+                  <Trash2 size={13} /> Hapus Divisi
+                </button>
+              </div>
             </div>
 
             {/* Member Search & View Controls */}
@@ -1339,14 +1372,26 @@ export default function AdminStrukturPage() {
               <AlertCircle size={26} />
             </div>
             <h3 className="font-black text-slate-900 text-base mb-1">
-              {deleteType === 'bph' ? 'Konfirmasi Hapus Pengurus BPH' : 'Konfirmasi Hapus Anggota Divisi'}
+              {deleteType === 'bph'
+                ? 'Konfirmasi Hapus Pengurus BPH'
+                : deleteType === 'division'
+                ? 'Konfirmasi Hapus Divisi'
+                : 'Konfirmasi Hapus Anggota Divisi'}
             </h3>
             <p className="text-xs text-slate-500 mb-5 leading-relaxed">
               Apakah Anda yakin ingin menghapus{' '}
               <span className="font-bold text-slate-800">
-                "{deleteType === 'bph' ? targetDeleteBph?.name : targetDeleteMember?.name}"
+                "
+                {deleteType === 'bph'
+                  ? targetDeleteBph?.name
+                  : deleteType === 'division'
+                  ? targetDeleteDivision?.name
+                  : targetDeleteMember?.name}
+                "
               </span>
-              ? Tindakan ini tidak dapat dibatalkan.
+              {deleteType === 'division'
+                ? ' beserta seluruh anggota di dalamnya? Tindakan ini tidak dapat dibatalkan.'
+                : '? Tindakan ini tidak dapat dibatalkan.'}
             </p>
             <div className="flex items-center justify-center gap-2.5">
               <button
@@ -1354,13 +1399,20 @@ export default function AdminStrukturPage() {
                   setDeleteModalOpen(false);
                   setTargetDeleteBph(null);
                   setTargetDeleteMember(null);
+                  setTargetDeleteDivision(null);
                 }}
                 className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
               >
                 Batal
               </button>
               <button
-                onClick={deleteType === 'bph' ? handleDeleteBph : handleDeleteMember}
+                onClick={
+                  deleteType === 'bph'
+                    ? handleDeleteBph
+                    : deleteType === 'division'
+                    ? handleDeleteDivision
+                    : handleDeleteMember
+                }
                 className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md shadow-red-600/20"
               >
                 Ya, Hapus

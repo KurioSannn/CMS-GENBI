@@ -7,18 +7,20 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import VisiMisi from '@/components/VisiMisi';
 import { genbiPhotos } from '@/data/members';
-import db, { BphMember, Division } from '@/lib/db';
+import db, { BphMember, Division, SiteSettings } from '@/lib/db';
 import { Sparkles, Zap, Award } from 'lucide-react';
 
 interface ProfilPageProps {
   pembina: BphMember | null;
   divisions: Division[];
+  settings: SiteSettings;
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const [bphMembers, divisions] = await Promise.all([
+  const [bphMembers, divisions, settings] = await Promise.all([
     db.bphMember.findMany(),
     db.division.findMany(),
+    db.siteSettings.get(),
   ]);
 
   const pembina = bphMembers.find((m) => m.category === 'PEMBINA') || null;
@@ -27,11 +29,12 @@ export const getServerSideProps: GetServerSideProps = async () => {
     props: {
       pembina: JSON.parse(JSON.stringify(pembina)),
       divisions: JSON.parse(JSON.stringify(divisions)),
+      settings: JSON.parse(JSON.stringify(settings)),
     },
   };
 };
 
-const ProfilPage = ({ pembina, divisions }: ProfilPageProps) => {
+const ProfilPage = ({ pembina, divisions, settings }: ProfilPageProps) => {
   const siteUrl = "https://www.genbiupnvjatim.com";
 
   return (
@@ -69,7 +72,7 @@ const ProfilPage = ({ pembina, divisions }: ProfilPageProps) => {
             
             <div className="relative w-full h-[400px] md:h-[700px] rounded-[3.5rem] overflow-hidden border-8 border-white/5 shadow-2xl">
               <Image 
-                src={genbiPhotos.profileMain} 
+                src={settings?.about?.profileHeroImage || genbiPhotos.profileMain} 
                 alt="GenBI UPNVJT Profile" 
                 fill 
                 className="object-cover"
@@ -222,7 +225,7 @@ const ProfilPage = ({ pembina, divisions }: ProfilPageProps) => {
         </div>
       </main>
 
-      <Footer />
+      <Footer settings={settings} />
     </div>
   );
 };
