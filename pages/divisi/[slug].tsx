@@ -148,7 +148,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-3 mb-1">
                       <Users className="text-yellow-400" size={24} />
-                      <span className="text-4xl md:text-5xl font-black text-white">{division.members.length}</span>
+                      <span className="text-4xl md:text-5xl font-black text-white">{(division.members || []).length}</span>
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Talenta Aktif</span>
                   </div>
@@ -190,19 +190,28 @@ const DivisionPage = ({ division }: { division: Division }) => {
                 </div>
               </motion.div>
 
-              <motion.div 
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: false, amount: 0.1 }}
-                variants={containerVariants}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10"
-              >
-                {division.members.map((member, index) => (
-                  <motion.div key={index} variants={itemVariants}>
-                    <MemberCard member={member} index={index} />
-                  </motion.div>
-                ))}
-              </motion.div>
+              {(division.members || []).length === 0 ? (
+                <div className="text-center py-16 px-6 bg-slate-50 rounded-3xl border border-slate-200 max-w-xl mx-auto">
+                  <Users className="mx-auto text-slate-400 mb-3" size={36} />
+                  <p className="text-slate-600 font-semibold text-base">
+                    Belum ada data anggota yang ditambahkan pada divisi ini.
+                  </p>
+                </div>
+              ) : (
+                <motion.div 
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: false, amount: 0.1 }}
+                  variants={containerVariants}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10"
+                >
+                  {(division.members || []).map((member, index) => (
+                    <motion.div key={index} variants={itemVariants}>
+                      <MemberCard member={member} index={index} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
 
             </div>
           </section>

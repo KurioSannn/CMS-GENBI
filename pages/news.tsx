@@ -48,7 +48,7 @@ export default function NewsPage({ articles }: NewsPageProps) {
         />
       </Head>
 
-      <Navbar />
+      <Navbar isScrolled={true} />
 
       <main className="pt-24 min-h-screen bg-[#F8FAFC]">
         <div className="container mx-auto px-4 py-8">

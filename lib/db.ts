@@ -2,6 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import { genbiDivisions } from '../data/members';
+import {
+  DEFAULT_SITE_SETTINGS,
+  mergeSiteSettings,
+  SiteSettings,
+} from './site-settings';
+
+export type { SiteSettings, SiteStatItem, SitePosterItem, SiteFaqItem } from './site-settings';
+export { DEFAULT_SITE_SETTINGS, mergeSiteSettings } from './site-settings';
 
 export interface AdminUser {
   id: number;
@@ -119,19 +127,58 @@ export interface ActivityLog {
   createdAt: string;
 }
 
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  type: string; // "ARTICLE" | "DOCUMENT"
+  description?: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface DatabaseSchema {
   adminUsers: AdminUser[];
   banners: Banner[];
   bphMembers: BphMember[];
   divisions: Division[];
   divisionMembers: DivisionMember[];
+  categories: Category[];
   articles: Article[];
   achievements: Achievement[];
   documents: DocumentArchive[];
   activityLogs: ActivityLog[];
+  siteSettings?: SiteSettings;
 }
 
 const DB_FILE_PATH = path.join(process.cwd(), 'data', 'genbihub.db.json');
+
+function getInitialCategories(now: string): Category[] {
+  const seedList = [
+    { name: 'Edukasi BI & CBP Rupiah', slug: 'edukasi-bi', type: 'ARTICLE', description: 'Literasi kebijakan Bank Indonesia, Cinta Bangga Paham Rupiah, dan QRIS.', sortOrder: 1 },
+    { name: 'Sosial Lingkungan', slug: 'sosial-lingkungan', type: 'ARTICLE', description: 'Aksi peduli lingkungan, penanaman pohon, dan bakti sosial masyarakat.', sortOrder: 2 },
+    { name: 'Ekonomi Kreatif & UMKM', slug: 'ekonomi-kreatif', type: 'ARTICLE', description: 'Digitalisasi UMKM dan kewirausahaan mahasiswa.', sortOrder: 3 },
+    { name: 'Rilis Kegiatan & Proker', slug: 'rilis-kegiatan', type: 'ARTICLE', description: 'Dokumentasi dan berita pelaksanaan kegiatan divisi.', sortOrder: 4 },
+    { name: 'Opini & Artikel Anggota', slug: 'opini-anggota', type: 'ARTICLE', description: 'Karya tulis, gagasan, dan opini mahasiswa penerima beasiswa.', sortOrder: 5 },
+    { name: 'SK & Surat Keputusan', slug: 'sk-resmi', type: 'DOCUMENT', description: 'Surat Keputusan Rektor & Bank Indonesia mengenai penerima beasiswa dan pengurus.', sortOrder: 1 },
+    { name: 'Laporan Pertanggungjawaban (LPJ)', slug: 'lpj-divisi', type: 'DOCUMENT', description: 'Arsip LPJ kegiatan program kerja per divisi.', sortOrder: 2 },
+    { name: 'Panduan Beasiswa BI', slug: 'panduan-beasiswa', type: 'DOCUMENT', description: 'Buku panduan pendaftaran, kriteria IPK, dan berkas seleksi beasiswa.', sortOrder: 3 },
+    { name: 'Template & Format Proposal', slug: 'template-proposal', type: 'DOCUMENT', description: 'Template baku proposal kegiatan dan pengajuan sponsorship.', sortOrder: 4 },
+    { name: 'AD/ART & Tata Tertib', slug: 'ad-art', type: 'DOCUMENT', description: 'Anggaran Dasar dan Anggaran Rumah Tangga organisasi GenBI.', sortOrder: 5 },
+  ];
+
+  return seedList.map((cat, idx) => ({
+    id: idx + 1,
+    name: cat.name,
+    slug: cat.slug,
+    type: cat.type,
+    description: cat.description,
+    sortOrder: cat.sortOrder,
+    createdAt: now,
+    updatedAt: now,
+  }));
+}
 
 // Inisialisasi Data Default Pertama Kali
 function getInitialData(): DatabaseSchema {
@@ -462,6 +509,8 @@ function getInitialData(): DatabaseSchema {
         createdAt: now,
       },
     ],
+    categories: getInitialCategories(now),
+    siteSettings: { ...DEFAULT_SITE_SETTINGS, updatedAt: now },
   };
 }
 
@@ -475,7 +524,12 @@ export function readDb(): DatabaseSchema {
       return initial;
     }
     const raw = fs.readFileSync(DB_FILE_PATH, 'utf-8');
-    return JSON.parse(raw) as DatabaseSchema;
+    const parsed = JSON.parse(raw) as Partial<DatabaseSchema>;
+    if (!Array.isArray(parsed.categories)) {
+      parsed.categories = getInitialCategories(new Date().toISOString());
+    }
+    parsed.siteSettings = mergeSiteSettings(parsed.siteSettings);
+    return parsed as DatabaseSchema;
   } catch (err) {
     console.error('Error reading database file, resetting to initial:', err);
     return getInitialData();
@@ -805,6 +859,93 @@ export const db = {
     },
   },
 
+  // --- KATEGORI ---
+  category: {
+    findMany: async (type?: string) => {
+      const data = readDb();
+      let list = [...(data.categories || [])];
+      if (type) {
+        const normalizedType = type.toUpperCase();
+        list = list.filter(c => c.type.toUpperCase() === normalizedType);
+      }
+      return list.sort((a, b) => {
+        if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    },
+    findUnique: async (where: { id?: number; slug?: string }) => {
+      const data = readDb();
+      const categories = data.categories || [];
+      if (where.id !== undefined) return categories.find(c => c.id === where.id) ?? null;
+      if (where.slug) return categories.find(c => c.slug === where.slug) ?? null;
+      return null;
+    },
+    create: async (input: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>) => {
+      const data = readDb();
+      if (!Array.isArray(data.categories)) data.categories = [];
+      const now = new Date().toISOString();
+      const newId = data.categories.length > 0 ? Math.max(...data.categories.map(c => c.id)) + 1 : 1;
+      const newCat: Category = {
+        ...input,
+        id: newId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      data.categories.push(newCat);
+      writeDb(data);
+      return newCat;
+    },
+    update: async (id: number, input: Partial<Omit<Category, 'id' | 'createdAt'>>) => {
+      const data = readDb();
+      if (!Array.isArray(data.categories)) data.categories = [];
+      const idx = data.categories.findIndex(c => c.id === id);
+      if (idx === -1) throw new Error('Kategori tidak ditemukan');
+      data.categories[idx] = {
+        ...data.categories[idx],
+        ...input,
+        updatedAt: new Date().toISOString(),
+      };
+      writeDb(data);
+      return data.categories[idx];
+    },
+    delete: async (id: number) => {
+      const data = readDb();
+      if (!Array.isArray(data.categories)) data.categories = [];
+      const target = data.categories.find(c => c.id === id);
+      if (!target) throw new Error('Kategori tidak ditemukan');
+      data.categories = data.categories.filter(c => c.id !== id);
+      writeDb(data);
+      return target;
+    },
+  },
+
+  // --- PENGATURAN LANDING PAGE ---
+  siteSettings: {
+    get: async (): Promise<SiteSettings> => {
+      const data = readDb();
+      return mergeSiteSettings(data.siteSettings);
+    },
+    update: async (input: Partial<SiteSettings>): Promise<SiteSettings> => {
+      const data = readDb();
+      const current = mergeSiteSettings(data.siteSettings);
+      const updated = mergeSiteSettings({
+        ...current,
+        ...input,
+        popup: input.popup ? { ...current.popup, ...input.popup } : current.popup,
+        about: input.about ? { ...current.about, ...input.about } : current.about,
+        recruitment: input.recruitment
+          ? { ...current.recruitment, ...input.recruitment }
+          : current.recruitment,
+        contact: input.contact ? { ...current.contact, ...input.contact } : current.contact,
+        footer: input.footer ? { ...current.footer, ...input.footer } : current.footer,
+        updatedAt: new Date().toISOString(),
+      });
+      data.siteSettings = updated;
+      writeDb(data);
+      return updated;
+    },
+  },
+
   // --- STATS OVERVIEW ---
   getStats: async () => {
     const data = readDb();
@@ -816,6 +957,7 @@ export const db = {
       articles: data.articles.length,
       achievements: data.achievements.length,
       documents: data.documents.length,
+      categories: (data.categories || []).length,
     };
   },
 };

@@ -13,13 +13,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const { slug, id, status } = req.query;
       if (slug) {
         const article = await articleController.getBySlug(String(slug));
+        if (!user && (!article || article.status !== 'PUBLISHED')) {
+          return res.status(404).json({ success: false, message: 'Artikel tidak ditemukan' });
+        }
         return res.status(200).json({ success: true, data: article });
       }
       if (id) {
         const article = await articleController.getById(Number(id));
+        if (!user && (!article || article.status !== 'PUBLISHED')) {
+          return res.status(404).json({ success: false, message: 'Artikel tidak ditemukan' });
+        }
         return res.status(200).json({ success: true, data: article });
       }
-      const articles = await articleController.getAll(status as any);
+      const effectiveStatus = user ? (status as any) : 'PUBLISHED';
+      const articles = await articleController.getAll(effectiveStatus);
       return res.status(200).json({ success: true, data: articles });
     }
 

@@ -1,13 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { readDatabase } from '@/lib/db';
+import { getAuthUser } from '@/lib/auth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const user = getAuthUser(req);
+  if (!user) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
   if (req.method !== 'GET') {
     return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 
   try {
     const db = await readDatabase();
+    const sanitizedDb = {
+      ...db,
+      adminUsers: (db.adminUsers || []).map(({ passwordHash, ...safeUser }) => safeUser),
+    };
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `genbihub_backup_${timestamp}.json`;
@@ -15,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.setHeader('Content-Type', 'application/json');
 
-    return res.status(200).send(JSON.stringify(db, null, 2));
+    return res.status(200).send(JSON.stringify(sanitizedDb, null, 2));
   } catch (error: any) {
     console.error('Backup Error:', error);
     return res.status(500).json({
