@@ -19,6 +19,8 @@ import {
   Bell,
   Sparkles,
   Loader2,
+  SlidersHorizontal,
+  Activity,
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -52,6 +54,7 @@ const navigationGroups: NavGroup[] = [
       { href: '/admin/berita', label: 'Berita & Artikel', icon: Newspaper },
       { href: '/admin/banner', label: 'Banner Carousel', icon: ImageIcon },
       { href: '/admin/kategori', label: 'Master Kategori', icon: Tag },
+      { href: '/admin/pengaturan', label: 'Pengaturan Landing Page', icon: SlidersHorizontal },
     ],
   },
   {
@@ -65,6 +68,12 @@ const navigationGroups: NavGroup[] = [
     group: 'ARSIP DATA',
     items: [
       { href: '/admin/dokumen', label: 'Dokumen Resmi', icon: FileText },
+    ],
+  },
+  {
+    group: 'SISTEM & AUDIT',
+    items: [
+      { href: '/admin/aktivitas', label: 'Log Aktivitas Admin', icon: Activity },
     ],
   },
 ];
