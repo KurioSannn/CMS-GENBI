@@ -39,7 +39,7 @@ export default function FileUpload({
   aspectRatio,
   acceptPdf = false,
   label = 'Unggah File',
-  helperText = 'Maksimal ukuran 15MB',
+  helperText = 'Maksimal 4MB per unggahan (gambar dikompresi saat crop)',
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [imgSrc, setImgSrc] = useState<string>('');
@@ -59,9 +59,14 @@ export default function FileUpload({
         method: 'POST',
         body: formData,
       });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.message || 'Gagal mengunggah');
+      if (res.status === 413) {
+        throw new Error(
+          'Ukuran file terlalu besar untuk batas server Vercel (maksimal ~4 MB). Silakan crop atau perkecil ukuran file.'
+        );
+      }
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.message || `Gagal mengunggah (HTTP ${res.status})`);
       }
 
       onChange(json.data.url);

@@ -7,6 +7,26 @@ import sharp from 'sharp';
 import crypto from 'crypto';
 import { getAuthUser } from '@/lib/auth';
 import { getStorageBucket, isFirebaseStorageConfigured } from '@/lib/firebase-admin';
+import { put } from '@vercel/blob';
+
+function cleanEnvValue(value?: string): string {
+  return (value || '').trim().replace(/^["']|["']$/g, '');
+}
+
+function getVercelBlobToken(): string {
+  return cleanEnvValue(process.env.BLOB_READ_WRITE_TOKEN);
+}
+
+function isVercelBlobConfigured(): boolean {
+  return Boolean(
+    getVercelBlobToken() ||
+      (cleanEnvValue(process.env.VERCEL_OIDC_TOKEN) && cleanEnvValue(process.env.BLOB_STORE_ID))
+  );
+}
+
+function isServerlessRuntime(): boolean {
+  return Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY);
+}
 
 export const config = {
   api: {
@@ -112,12 +132,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const fileSize = fileBuffer.byteLength;
     const sizeInMb = (fileSize / (1024 * 1024)).toFixed(1);
+    const storagePath = `uploads/${scope}/${finalFilename}`;
     let returnUrl = '';
-    let storageProvider: 'firebase' | 'local' = 'local';
+    let storageProvider: 'vercel-blob' | 'firebase' | 'local' = 'local';
 
-    if (isFirebaseStorageConfigured()) {
+    if (isVercelBlobConfigured()) {
+      const token = getVercelBlobToken();
+      const blob = await put(storagePath, fileBuffer, {
+        access: 'public',
+        addRandomSuffix: false,
+        contentType,
+        cacheControlMaxAge: 60 * 60 * 24 * 365,
+        ...(token ? { token } : {}),
+      });
+      returnUrl = blob.url;
+      storageProvider = 'vercel-blob';
+    } else if (isFirebaseStorageConfigured()) {
       const bucket = getStorageBucket();
-      const storagePath = `uploads/${scope}/${finalFilename}`;
       const downloadToken = crypto.randomUUID();
       const storageFile = bucket.file(storagePath);
 
@@ -138,8 +169,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         storagePath
       )}?alt=media&token=${downloadToken}`;
       storageProvider = 'firebase';
+    } else if (isServerlessRuntime()) {
+      return res.status(500).json({
+        success: false,
+        message:
+          'Cloud storage belum dikonfigurasi untuk environment serverless. Hubungkan Vercel Blob (BLOB_READ_WRITE_TOKEN) atau isi FIREBASE_STORAGE_BUCKET.',
+      });
     } else {
-      // Fallback penyimpanan lokal untuk dev offline / VPS tanpa bucket
+      // Fallback penyimpanan lokal untuk dev offline / VPS tanpa cloud storage
       const targetDir = path.join(process.cwd(), 'public', 'uploads', scope);
       if (!fs.existsSync(targetDir)) {
         fs.mkdirSync(targetDir, { recursive: true });
