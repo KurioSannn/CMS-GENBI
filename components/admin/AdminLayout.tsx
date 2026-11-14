@@ -73,7 +73,7 @@ const navigationGroups: NavGroup[] = [
   },
 ];
 
-export default function AdminLayout({ children, title, action }: AdminLayoutProps) {
+export default function AdminLayout({ children, title, subtitle, action }: AdminLayoutProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; role: string; username: string } | null>(null);
@@ -253,6 +253,9 @@ export default function AdminLayout({ children, title, action }: AdminLayoutProp
                 <span className="text-[10px] font-medium text-slate-400">Panel Pengurus</span>
               </div>
               <h1 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight">{title}</h1>
+              {subtitle && (
+                <p className="hidden sm:block text-xs text-slate-500 font-medium mt-0.5 max-w-2xl truncate">{subtitle}</p>
+              )}
             </div>
           </div>
 
