@@ -18,7 +18,7 @@ export function exportToCsv<T>(filename: string, data: T[], columns: CsvColumn<T
   // Data rows
   const rows = data.map((item) =>
     columns.map((col) => {
-      let val: any;
+      let val: unknown;
       if (typeof col.key === 'function') {
         val = col.key(item);
       } else {

@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import db, { type BphMember } from '@/lib/db';
 import { AdminPayload } from '@/lib/auth';
 
 export const bphController = {
@@ -41,7 +41,7 @@ export const bphController = {
     return member;
   },
 
-  async update(id: number, data: any, user?: AdminPayload | null) {
+  async update(id: number, data: Partial<BphMember>, user?: AdminPayload | null) {
     if (!id) throw new Error('ID pengurus wajib disertakan');
 
     const updated = await db.bphMember.update(Number(id), data);

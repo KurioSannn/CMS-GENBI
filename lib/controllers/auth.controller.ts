@@ -37,7 +37,9 @@ export const authController = {
         description: `Admin ${admin.name} berhasil login ke dashboard`,
         ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1',
       });
-    } catch (e) {}
+    } catch {
+      // Activity log failure should not block login
+    }
 
     return res.status(200).json({
       success: true,

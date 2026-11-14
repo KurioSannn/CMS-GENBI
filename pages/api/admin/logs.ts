@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getAuthUser } from '@/lib/auth';
 import { readDatabase } from '@/lib/db';
+import { getErrorMessage } from '@/lib/utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const user = getAuthUser(req);
@@ -51,10 +52,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         stats,
       },
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(500).json({
       success: false,
-      message: error?.message || 'Gagal memuat log aktivitas admin',
+      message: getErrorMessage(error, 'Gagal memuat log aktivitas admin'),
     });
   }
 }

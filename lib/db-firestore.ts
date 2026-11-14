@@ -284,7 +284,8 @@ export const firestoreDb = {
       const docRef = firestore.collection(COLLECTIONS.divisions).doc(String(id));
       const snap = await docRef.get();
       if (!snap.exists) throw new Error('Division not found');
-      const { members: _ignoredMembers, ...rest } = input;
+      const rest = { ...input };
+      delete rest.members;
       const updated: Division = {
         ...(snap.data() as Division),
         ...rest,

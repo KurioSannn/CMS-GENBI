@@ -26,3 +26,16 @@ export function slugify(text: string): string {
     .replace(/^-+/, "")
     .replace(/-+$/, "");
 }
+
+/**
+ * Extracts a safe readable message from an unknown caught error value.
+ */
+export function getErrorMessage(error: unknown, fallback = "Terjadi kesalahan sistem"): string {
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  if (typeof error === "string" && error.trim()) {
+    return error;
+  }
+  return fallback;
+}

@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import db, { type Achievement } from '@/lib/db';
 import { AdminPayload } from '@/lib/auth';
 
 export const achievementController = {
@@ -43,7 +43,7 @@ export const achievementController = {
     return achievement;
   },
 
-  async update(id: number, data: any, user?: AdminPayload | null) {
+  async update(id: number, data: Partial<Achievement>, user?: AdminPayload | null) {
     if (!id) throw new Error('ID prestasi wajib disertakan');
 
     const updated = await db.achievement.update(Number(id), data);

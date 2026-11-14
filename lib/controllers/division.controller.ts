@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import db, { type Division, type DivisionMember } from '@/lib/db';
 import { AdminPayload } from '@/lib/auth';
 import { slugify } from '@/lib/utils';
 
@@ -52,7 +52,7 @@ export const divisionController = {
     return division;
   },
 
-  async update(id: number, data: any, user?: AdminPayload | null) {
+  async update(id: number, data: Partial<Division>, user?: AdminPayload | null) {
     if (!id) throw new Error('ID divisi wajib disertakan');
 
     if (data.name && !data.slug) {
@@ -116,7 +116,7 @@ export const divisionController = {
     return member;
   },
 
-  async updateMember(memberId: number, data: any, user?: AdminPayload | null) {
+  async updateMember(memberId: number, data: Partial<DivisionMember>, user?: AdminPayload | null) {
     if (!memberId) throw new Error('ID anggota wajib disertakan');
 
     const updated = await db.division.updateMember(Number(memberId), data);

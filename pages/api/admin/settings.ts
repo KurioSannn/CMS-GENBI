@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import settingsController from '@/lib/controllers/settings.controller';
 import { requireAdminUser } from '@/lib/auth';
+import { getErrorMessage } from '@/lib/utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const user = requireAdminUser(req, res);
@@ -18,10 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     return res.status(405).json({ success: false, message: 'Method not allowed' });
-  } catch (error: any) {
+  } catch (error: unknown) {
     return res.status(500).json({
       success: false,
-      message: error?.message || 'Gagal memproses pengaturan landing page',
+      message: getErrorMessage(error, 'Gagal memproses pengaturan landing page'),
     });
   }
 }

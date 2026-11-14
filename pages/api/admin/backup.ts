@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { readDatabase } from '@/lib/db';
 import { getAuthUser } from '@/lib/auth';
+import { getErrorMessage } from '@/lib/utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const user = getAuthUser(req);
@@ -16,7 +17,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const db = await readDatabase();
     const sanitizedDb = {
       ...db,
-      adminUsers: (db.adminUsers || []).map(({ passwordHash, ...safeUser }) => safeUser),
+      adminUsers: (db.adminUsers || []).map((adminUser) => {
+        const safeUser: Partial<typeof adminUser> = { ...adminUser };
+        delete safeUser.passwordHash;
+        return safeUser;
+      }),
     };
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -26,12 +31,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.setHeader('Content-Type', 'application/json');
 
     return res.status(200).send(JSON.stringify(sanitizedDb, null, 2));
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Backup Error:', error);
     return res.status(500).json({
       success: false,
       message: 'Gagal membuat backup database',
-      error: error?.message,
+      error: getErrorMessage(error),
     });
   }
 }
