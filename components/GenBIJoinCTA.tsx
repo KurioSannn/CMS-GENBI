@@ -1,7 +1,7 @@
 "use client";
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CheckCircle2, AlertCircle, X, FileText, ExternalLink, Phone, Instagram, Globe, Sparkles } from 'lucide-react';
+import { ArrowRight, CheckCircle2, AlertCircle, X, FileText, Phone, Instagram, Globe, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { mergeSiteSettings, SiteSettings } from '@/lib/site-settings';
 

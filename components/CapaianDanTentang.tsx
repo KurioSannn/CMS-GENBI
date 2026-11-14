@@ -58,7 +58,7 @@ const CapaianDanTentang = ({ settings }: CapaianDanTentangProps) => {
                 Generasi Baru
               </span> <br />
               <span className="text-[#EAB308] text-2xl md:text-4xl mt-2 block">
-                UPN "Veteran" Jawa Timur
+                UPN &quot;Veteran&quot; Jawa Timur
               </span>
             </h2>
           </motion.div>

@@ -1,12 +1,11 @@
 import { GetServerSideProps } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import db, { Article, SiteSettings } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
-import { Calendar, User, ArrowLeft, Share2, Tag } from 'lucide-react';
+import { Calendar, User, ArrowLeft } from 'lucide-react';
 
 interface DetailBeritaProps {
   article: Article | null;

@@ -22,18 +22,14 @@
 
   const Struktur = ({ divisions }: StrukturProps) => {
     // FIX: Tipe data harus dikunci dengan 'as const' agar Vercel tidak error
-const smoothSpring: any = {
-  type: "spring",
+const smoothSpring = {
+  type: "spring" as const,
   stiffness: 40,
   damping: 12,
   mass: 0.8
 };
 
     const perspectiveStyle = { perspective: "2000px" };
-    const backfaceStyle = { 
-      backfaceVisibility: "hidden" as const,
-      WebkitBackfaceVisibility: "hidden" as const,
-    };
 
     return (
       <section id="struktur-organisasi" className="relative py-28 md:py-36 bg-[#030712] overflow-hidden">

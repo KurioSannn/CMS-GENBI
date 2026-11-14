@@ -66,8 +66,8 @@ const ProfilPage = ({ pembina, divisions, settings }: ProfilPageProps) => {
             </h1>
             
             <p className="text-slate-400 text-lg md:text-xl max-w-3xl mx-auto italic leading-relaxed mb-12">
-              "Generasi Baru Indonesia (GenBI) UPN Veteran Jawa Timur bukan sekadar komunitas penerima beasiswa, 
-              melainkan wadah bagi para pemimpin masa depan untuk berinovasi, mengabdi, dan menjadi agen perubahan bagi bangsa."
+              &quot;Generasi Baru Indonesia (GenBI) UPN Veteran Jawa Timur bukan sekadar komunitas penerima beasiswa, 
+              melainkan wadah bagi para pemimpin masa depan untuk berinovasi, mengabdi, dan menjadi agen perubahan bagi bangsa.&quot;
             </p>
             
             <div className="relative w-full h-[400px] md:h-[700px] rounded-[3.5rem] overflow-hidden border-8 border-white/5 shadow-2xl">
@@ -131,7 +131,7 @@ const ProfilPage = ({ pembina, divisions, settings }: ProfilPageProps) => {
           {pembina?.quote || `"Dalam kepengurusan Generasi Baru Indonesia (GenBI) Komisariat UPN \"Veteran\" Jawa Timur, kehadiran Bapak M. Khadik Asrori, S.TP, M.LING selaku Pembina memegang peranan esensial. Beliau memberikan arahan, bimbingan, serta motivasi yang luhur bagi seluruh anggota dalam menunaikan misi luhur sebagai garda terdepan bangsa."`}
         </p>
         <p className="font-black text-yellow-500 text-2xl md:text-3xl tracking-tighter uppercase">
-          "Energi Untuk Negeri, Komitmen Untuk Mengabdi."
+          &quot;Energi Untuk Negeri, Komitmen Untuk Mengabdi.&quot;
         </p>
       </div>
     </div>
@@ -174,13 +174,19 @@ const ProfilPage = ({ pembina, divisions, settings }: ProfilPageProps) => {
                   <p className="text-yellow-500 font-black uppercase tracking-widest text-[10px]">Solidarity & Impact</p>
                 </div>
                 <p className="text-slate-300 text-lg md:text-xl italic font-medium max-w-2xl leading-relaxed px-4 text-center">
-                  "Bersama membangun sinergi tak terbatas untuk satu tujuan, <span className="text-white font-bold">Dedikasi untuk Negeri!</span>"
+                  &quot;Bersama membangun sinergi tak terbatas untuk satu tujuan, <span className="text-white font-bold">Dedikasi untuk Negeri!</span>&quot;
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-              {(divisions && divisions.length > 0 ? divisions : genbiPhotos.teams).map((item: any, idx) => {
+              {((divisions && divisions.length > 0 ? divisions : genbiPhotos.teams) as Array<{
+                name?: string;
+                teamPhotoUrl?: string | null;
+                src?: string;
+                logoUrl?: string | null;
+                tagline?: string | null;
+              }>).map((item, idx) => {
                 const teamName = item.name || '';
                 const teamSrc = item.teamPhotoUrl || item.src || item.logoUrl || '/BPH ALL TEAM.png';
                 const teamTagline = item.tagline || 'Pilar kekuatan utama dalam harmoni GenBI UPNVJT.';

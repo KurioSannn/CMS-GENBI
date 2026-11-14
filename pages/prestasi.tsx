@@ -61,7 +61,7 @@ export default function PrestasiPage({ achievements, settings }: PrestasiPagePro
                     Hall of Fame
                 </motion.h1>
                 <p className="text-yellow-100 text-lg max-w-2xl mx-auto">
-                    Jejak langkah prestasi dan kontribusi nyata GenBI UPN "Veteran" Jawa Timur untuk negeri.
+                    Jejak langkah prestasi dan kontribusi nyata GenBI UPN &quot;Veteran&quot; Jawa Timur untuk negeri.
                 </p>
              </div>
         </section>

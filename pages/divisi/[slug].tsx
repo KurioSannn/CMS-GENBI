@@ -8,19 +8,8 @@ import MemberCard from '@/components/MemberCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Sparkles, Zap, Users, Calendar } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 const DivisionPage = ({ division, settings }: { division: Division; settings?: SiteSettings }) => {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   if (!division) return <div className="bg-[#050B18] min-h-screen" />;
 
   const containerVariants = {
@@ -134,7 +123,7 @@ const DivisionPage = ({ division, settings }: { division: Division; settings?: S
 
                     <motion.div variants={itemVariants} className="flex justify-center lg:justify-start">
                       <p className="text-slate-400 text-lg md:text-xl font-medium italic border-l-4 border-yellow-500/50 pl-6 py-2">
-                        "{division.description}"
+                        &quot;{division.description}&quot;
                       </p>
                     </motion.div>
                   </div>

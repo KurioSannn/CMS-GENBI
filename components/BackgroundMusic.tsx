@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX, Volume1 } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const BackgroundMusic = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -14,6 +14,7 @@ const BackgroundMusic = () => {
   const volumePanelRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const hasInteracted = useRef(false);
+  const initialVolumeRef = useRef(volume);
 
   // 1. Deteksi Device & Window Resize
   useEffect(() => {
@@ -28,7 +29,7 @@ const BackgroundMusic = () => {
     if (typeof window === 'undefined') return;
 
     const audio = new Audio('/mars-genbi.mp3'); 
-    audio.volume = volume;
+    audio.volume = initialVolumeRef.current;
     audio.loop = true;
     audioRef.current = audio;
 
@@ -74,10 +75,10 @@ const BackgroundMusic = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSliderMove = (e: React.MouseEvent | MouseEvent) => {
+  const handleSliderMove = (e: React.MouseEvent | MouseEvent | TouchEvent) => {
     if (!sliderRef.current) return;
     const rect = sliderRef.current.getBoundingClientRect();
-    const clientX = 'clientX' in e ? e.clientX : (e as any).touches[0].clientX;
+    const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
     const clickX = clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
     const newVolume = percentage / 100;
