@@ -7,150 +7,37 @@ import {
   mergeSiteSettings,
   SiteSettings,
 } from './site-settings';
+import { isFirestoreConfigured } from './firebase-admin';
+import { firestoreDb, readDatabaseFromFirestore } from './db-firestore';
+import type {
+  AdminUser,
+  Banner,
+  BphMember,
+  DivisionMember,
+  Division,
+  Article,
+  Achievement,
+  DocumentArchive,
+  ActivityLog,
+  Category,
+  DatabaseSchema,
+} from './db-types';
 
 export type { SiteSettings, SiteStatItem, SitePosterItem, SiteFaqItem } from './site-settings';
 export { DEFAULT_SITE_SETTINGS, mergeSiteSettings } from './site-settings';
-
-export interface AdminUser {
-  id: number;
-  username: string;
-  email: string;
-  passwordHash: string;
-  name: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Banner {
-  id: number;
-  title: string;
-  subtitle?: string | null;
-  imageUrl: string;
-  buttonText?: string | null;
-  buttonUrl?: string | null;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface BphMember {
-  id: number;
-  name: string;
-  category: string; // "PEMBINA" | "KETUA" | "WAKIL" | "SEKRETARIS" | "BENDAHARA"
-  position: string;
-  imageUrl: string;
-  quote?: string | null;
-  instagram?: string | null;
-  linkedin?: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface DivisionMember {
-  id: number;
-  divisionId: number;
-  name: string;
-  role: string;
-  prodiAngkatan?: string | null;
-  imageUrl: string;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Division {
-  id: number;
-  name: string;
-  slug: string;
-  tagline?: string | null;
-  description: string;
-  logoUrl?: string | null;
-  teamPhotoUrl?: string | null;
-  sortOrder: number;
-  members: DivisionMember[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Article {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  coverImage: string;
-  category: string;
-  author: string;
-  status: 'DRAFT' | 'PUBLISHED';
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Achievement {
-  id: number;
-  title: string;
-  recipient: string;
-  competition: string;
-  badge?: string | null;
-  rank: string; // "gold" | "silver" | "bronze"
-  year: string;
-  imageUrl: string;
-  description?: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface DocumentArchive {
-  id: number;
-  title: string;
-  category: string; // "SK" | "LPJ" | "BEASISWA" | "PROPOSAL"
-  fileUrl: string;
-  fileSize?: string | null;
-  description?: string | null;
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ActivityLog {
-  id: number;
-  adminId?: number | null;
-  adminName?: string | null;
-  action: string;
-  description: string;
-  ipAddress?: string | null;
-  createdAt: string;
-}
-
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  type: string; // "ARTICLE" | "DOCUMENT"
-  description?: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface DatabaseSchema {
-  adminUsers: AdminUser[];
-  banners: Banner[];
-  bphMembers: BphMember[];
-  divisions: Division[];
-  divisionMembers: DivisionMember[];
-  categories: Category[];
-  articles: Article[];
-  achievements: Achievement[];
-  documents: DocumentArchive[];
-  activityLogs: ActivityLog[];
-  siteSettings?: SiteSettings;
-}
+export type {
+  AdminUser,
+  Banner,
+  BphMember,
+  DivisionMember,
+  Division,
+  Article,
+  Achievement,
+  DocumentArchive,
+  ActivityLog,
+  Category,
+  DatabaseSchema,
+} from './db-types';
 
 const DB_FILE_PATH = path.join(process.cwd(), 'data', 'genbihub.db.json');
 
@@ -536,7 +423,12 @@ export function readDb(): DatabaseSchema {
   }
 }
 
-export const readDatabase = readDb;
+export async function readDatabase(): Promise<DatabaseSchema> {
+  if (isFirestoreConfigured()) {
+    return readDatabaseFromFirestore();
+  }
+  return readDb();
+}
 
 function writeDb(data: DatabaseSchema): void {
   try {
@@ -550,8 +442,8 @@ function writeDb(data: DatabaseSchema): void {
   }
 }
 
-// Database Repository Object
-export const db = {
+// Local JSON Database Repository Object
+export const jsonDb = {
   // --- ADMIN USERS ---
   adminUser: {
     findFirst: async (predicate?: (user: AdminUser) => boolean) => {
@@ -960,6 +852,76 @@ export const db = {
       categories: (data.categories || []).length,
     };
   },
+};
+
+type DbRepository = typeof jsonDb;
+
+const activeDb = (): DbRepository => (isFirestoreConfigured() ? firestoreDb : jsonDb);
+
+// Unified Database Repository (otomatis memilih Firestore jika env Firebase lengkap, atau fallback ke JSON lokal)
+export const db: DbRepository = {
+  adminUser: {
+    findFirst: (predicate) => activeDb().adminUser.findFirst(predicate),
+    findUnique: (where) => activeDb().adminUser.findUnique(where),
+  },
+  banner: {
+    findMany: () => activeDb().banner.findMany(),
+    create: (input) => activeDb().banner.create(input),
+    update: (id, input) => activeDb().banner.update(id, input),
+    delete: (id) => activeDb().banner.delete(id),
+  },
+  bphMember: {
+    findMany: () => activeDb().bphMember.findMany(),
+    create: (input) => activeDb().bphMember.create(input),
+    update: (id, input) => activeDb().bphMember.update(id, input),
+    delete: (id) => activeDb().bphMember.delete(id),
+  },
+  division: {
+    findMany: () => activeDb().division.findMany(),
+    findBySlug: (slug) => activeDb().division.findBySlug(slug),
+    findById: (id) => activeDb().division.findById(id),
+    create: (input) => activeDb().division.create(input),
+    update: (id, input) => activeDb().division.update(id, input),
+    delete: (id) => activeDb().division.delete(id),
+    addMember: (divisionId, memberInput) => activeDb().division.addMember(divisionId, memberInput),
+    updateMember: (memberId, input) => activeDb().division.updateMember(memberId, input),
+    deleteMember: (memberId) => activeDb().division.deleteMember(memberId),
+  },
+  article: {
+    findMany: (status) => activeDb().article.findMany(status),
+    findBySlug: (slug) => activeDb().article.findBySlug(slug),
+    findById: (id) => activeDb().article.findById(id),
+    create: (input) => activeDb().article.create(input),
+    update: (id, input) => activeDb().article.update(id, input),
+    delete: (id) => activeDb().article.delete(id),
+  },
+  achievement: {
+    findMany: () => activeDb().achievement.findMany(),
+    create: (input) => activeDb().achievement.create(input),
+    update: (id, input) => activeDb().achievement.update(id, input),
+    delete: (id) => activeDb().achievement.delete(id),
+  },
+  document: {
+    findMany: () => activeDb().document.findMany(),
+    create: (input) => activeDb().document.create(input),
+    delete: (id) => activeDb().document.delete(id),
+  },
+  activityLog: {
+    findMany: (limit) => activeDb().activityLog.findMany(limit),
+    create: (input) => activeDb().activityLog.create(input),
+  },
+  category: {
+    findMany: (type) => activeDb().category.findMany(type),
+    findUnique: (where) => activeDb().category.findUnique(where),
+    create: (input) => activeDb().category.create(input),
+    update: (id, input) => activeDb().category.update(id, input),
+    delete: (id) => activeDb().category.delete(id),
+  },
+  siteSettings: {
+    get: () => activeDb().siteSettings.get(),
+    update: (input) => activeDb().siteSettings.update(input),
+  },
+  getStats: () => activeDb().getStats(),
 };
 
 export default db;
