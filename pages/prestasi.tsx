@@ -4,30 +4,35 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Prestasi from '@/components/Prestasi'; 
 import { motion } from 'framer-motion';
-import db, { Achievement } from '@/lib/db';
+import db, { Achievement, SiteSettings } from '@/lib/db';
 
 interface PrestasiPageProps {
   achievements: Achievement[];
+  settings?: SiteSettings;
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const achievements = await db.achievement.findMany();
+  const [achievements, settings] = await Promise.all([
+    db.achievement.findMany(),
+    db.siteSettings.get(),
+  ]);
 
   return {
     props: {
       achievements: JSON.parse(JSON.stringify(achievements)),
+      settings: JSON.parse(JSON.stringify(settings)),
     },
   };
 };
 
-export default function PrestasiPage({ achievements }: PrestasiPageProps) {
+export default function PrestasiPage({ achievements, settings }: PrestasiPageProps) {
   return (
     <>
       <Head>
         <title>Prestasi GenBI - UPN Veteran Jawa Timur</title>
       </Head>
       
-      <Navbar />
+      <Navbar isScrolled={true} />
       
       <main className="pt-24 min-h-screen bg-gray-50">
         
@@ -68,7 +73,7 @@ export default function PrestasiPage({ achievements }: PrestasiPageProps) {
 
       </main>
       
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

@@ -1449,30 +1449,7 @@
       "updatedAt": "2026-09-14T06:20:19.133Z"
     }
   ],
-  "documents": [
-    {
-      "id": 1,
-      "title": "Buku Panduan Pendaftaran Beasiswa Bank Indonesia 2026",
-      "category": "BEASISWA",
-      "fileUrl": "/panduan-beasiswa-bi-2026.pdf",
-      "fileSize": "1.8 MB",
-      "description": "Panduan persyaratan administratif, kriteria IPK, dan alur seleksi Beasiswa BI 2026.",
-      "publishedAt": "2026-09-14T06:20:19.133Z",
-      "createdAt": "2026-09-14T06:20:19.133Z",
-      "updatedAt": "2026-09-14T06:20:19.133Z"
-    },
-    {
-      "id": 2,
-      "title": "Surat Keputusan (SK) Pengurus GenBI UPNVJT Periode 2025/2026",
-      "category": "SK",
-      "fileUrl": "/sk-pengurus-genbi-2025-2026.pdf",
-      "fileSize": "840 KB",
-      "description": "SK resmi penetapan Pembina, BPH, dan Anggota Divisi GenBI UPN \"Veteran\" Jawa Timur.",
-      "publishedAt": "2026-09-14T06:20:19.133Z",
-      "createdAt": "2026-09-14T06:20:19.133Z",
-      "updatedAt": "2026-09-14T06:20:19.133Z"
-    }
-  ],
+  "documents": [],
   "activityLogs": [
     {
       "id": 1,
@@ -1670,7 +1647,7 @@
       "prokerCount": 35,
       "activeMemberCount": 74,
       "virtualTourUrl": "http://upnjatim.ac.id/vtour/",
-      "profileHeroImage": "/fotoprofil.jpg"
+      "profileHeroImage": "/foto profile genbiupnvjt.png"
     },
     "stats": [
       {

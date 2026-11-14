@@ -3,18 +3,16 @@ import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import db, { Division } from '@/lib/db';
+import db, { Division, SiteSettings } from '@/lib/db';
 import MemberCard from '@/components/MemberCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Sparkles, Zap, Users, Calendar } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const DivisionPage = ({ division }: { division: Division }) => {
-  if (!division) return <div className="bg-[#050B18] min-h-screen" />;
-
+const DivisionPage = ({ division, settings }: { division: Division; settings?: SiteSettings }) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -22,6 +20,8 @@ const DivisionPage = ({ division }: { division: Division }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  if (!division) return <div className="bg-[#050B18] min-h-screen" />;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -217,7 +217,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
           </section>
         </main>
         
-        <Footer />
+        <Footer settings={settings} />
       </motion.div>
     </AnimatePresence>
   );
@@ -225,7 +225,10 @@ const DivisionPage = ({ division }: { division: Division }) => {
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const slug = params?.slug as string;
-  const division = await db.division.findBySlug(slug);
+  const [division, settings] = await Promise.all([
+    db.division.findBySlug(slug),
+    db.siteSettings.get(),
+  ]);
 
   if (!division) {
     return { notFound: true };
@@ -234,6 +237,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   return {
     props: {
       division: JSON.parse(JSON.stringify(division)),
+      settings: JSON.parse(JSON.stringify(settings)),
     },
   };
 };

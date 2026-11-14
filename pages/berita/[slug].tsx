@@ -4,17 +4,21 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import db, { Article } from '@/lib/db';
+import db, { Article, SiteSettings } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { Calendar, User, ArrowLeft, Share2, Tag } from 'lucide-react';
 
 interface DetailBeritaProps {
   article: Article | null;
+  settings?: SiteSettings;
 }
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const slug = params?.slug as string;
-  const article = await db.article.findBySlug(slug);
+  const [article, settings] = await Promise.all([
+    db.article.findBySlug(slug),
+    db.siteSettings.get(),
+  ]);
 
   if (!article || article.status !== 'PUBLISHED') {
     return {
@@ -25,11 +29,12 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   return {
     props: {
       article: JSON.parse(JSON.stringify(article)),
+      settings: JSON.parse(JSON.stringify(settings)),
     },
   };
 };
 
-export default function DetailBerita({ article }: DetailBeritaProps) {
+export default function DetailBerita({ article, settings }: DetailBeritaProps) {
   if (!article) return null;
 
   const siteUrl = 'https://www.genbiupnvjatim.com';
@@ -105,7 +110,7 @@ export default function DetailBerita({ article }: DetailBeritaProps) {
         </article>
       </main>
 
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

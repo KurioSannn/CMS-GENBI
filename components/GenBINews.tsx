@@ -48,7 +48,7 @@ const GenBINews = ({ articles }: GenBINewsProps) => {
                 <Link href={`/berita/${featured.slug}`}>
                   <div className="relative aspect-video md:h-[600px] w-full rounded-[3rem] overflow-hidden shadow-2xl border border-slate-200 bg-[#0B1F40]">
                     <Image 
-                      src={featured.coverImage || '/placeholder-news.jpg'} 
+                      src={featured.coverImage || '/GenBI Webinar Career.png'} 
                       alt={featured.title} 
                       fill
                       style={{ objectFit: 'cover', objectPosition: 'center' }}
@@ -82,7 +82,7 @@ const GenBINews = ({ articles }: GenBINewsProps) => {
                   <motion.div whileHover={{ x: 10 }} className="group flex gap-4 items-center p-4 bg-white rounded-[2rem] shadow-sm hover:shadow-md border border-slate-100 transition-all">
                     <div className="relative w-24 h-24 aspect-square flex-shrink-0 rounded-2xl overflow-hidden bg-slate-200">
                       <Image 
-                        src={news.coverImage || '/placeholder-news.jpg'} 
+                        src={news.coverImage || '/GenBI Webinar Career.png'} 
                         alt={news.title} 
                         fill 
                         style={{ objectFit: 'cover' }}

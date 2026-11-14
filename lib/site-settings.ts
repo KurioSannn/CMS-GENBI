@@ -81,7 +81,7 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     prokerCount: 35,
     activeMemberCount: 74,
     virtualTourUrl: 'http://upnjatim.ac.id/vtour/',
-    profileHeroImage: '/fotoprofil.jpg',
+    profileHeroImage: '/foto profile genbiupnvjt.png',
   },
   stats: [
     { label: 'ANGGOTA AKTIF', value: 100, suffix: '+', sub: 'MAHASISWA TERPILIH' },

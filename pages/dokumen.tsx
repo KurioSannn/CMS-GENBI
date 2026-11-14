@@ -3,7 +3,7 @@ import type { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import db, { Category, DocumentArchive } from '@/lib/db';
+import db, { Category, DocumentArchive, SiteSettings } from '@/lib/db';
 import { formatDate } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import {
@@ -19,23 +19,26 @@ import {
 interface DokumenPageProps {
   documents: DocumentArchive[];
   categories: Category[];
+  settings?: SiteSettings;
 }
 
 export const getServerSideProps: GetServerSideProps<DokumenPageProps> = async () => {
-  const [documents, categories] = await Promise.all([
+  const [documents, categories, settings] = await Promise.all([
     db.document.findMany(),
     db.category.findMany('DOCUMENT'),
+    db.siteSettings.get(),
   ]);
 
   return {
     props: {
       documents: JSON.parse(JSON.stringify(documents)),
       categories: JSON.parse(JSON.stringify(categories)),
+      settings: JSON.parse(JSON.stringify(settings)),
     },
   };
 };
 
-export default function DokumenPage({ documents, categories }: DokumenPageProps) {
+export default function DokumenPage({ documents, categories, settings }: DokumenPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
 
@@ -221,7 +224,7 @@ export default function DokumenPage({ documents, categories }: DokumenPageProps)
         </section>
       </main>
 
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

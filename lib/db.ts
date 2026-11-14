@@ -363,30 +363,7 @@ function getInitialData(): DatabaseSchema {
         updatedAt: now,
       },
     ],
-    documents: [
-      {
-        id: 1,
-        title: 'Buku Panduan Pendaftaran Beasiswa Bank Indonesia 2026',
-        category: 'BEASISWA',
-        fileUrl: '/panduan-beasiswa-bi-2026.pdf',
-        fileSize: '1.8 MB',
-        description: 'Panduan persyaratan administratif, kriteria IPK, dan alur seleksi Beasiswa BI 2026.',
-        publishedAt: now,
-        createdAt: now,
-        updatedAt: now,
-      },
-      {
-        id: 2,
-        title: 'Surat Keputusan (SK) Pengurus GenBI UPNVJT Periode 2025/2026',
-        category: 'SK',
-        fileUrl: '/sk-pengurus-genbi-2025-2026.pdf',
-        fileSize: '840 KB',
-        description: 'SK resmi penetapan Pembina, BPH, dan Anggota Divisi GenBI UPN "Veteran" Jawa Timur.',
-        publishedAt: now,
-        createdAt: now,
-        updatedAt: now,
-      },
-    ],
+    documents: [],
     activityLogs: [
       {
         id: 1,

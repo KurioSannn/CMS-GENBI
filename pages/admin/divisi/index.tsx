@@ -965,7 +965,7 @@ export default function AdminStrukturPage() {
                                     alt={m.name}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                      (e.target as any).src = '/members/dummy.png';
+                                      (e.target as any).src = '/foto profile genbiupnvjt.png';
                                     }}
                                   />
                                 </div>
@@ -1035,7 +1035,7 @@ export default function AdminStrukturPage() {
                             alt={m.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as any).src = '/members/dummy.png';
+                              (e.target as any).src = '/foto profile genbiupnvjt.png';
                             }}
                           />
                         </div>

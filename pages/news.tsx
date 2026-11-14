@@ -3,23 +3,28 @@ import Head from 'next/head';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import GenBINews from '@/components/GenBINews';
-import db, { Article } from '@/lib/db';
+import db, { Article, SiteSettings } from '@/lib/db';
 
 interface NewsPageProps {
   articles: Article[];
+  settings?: SiteSettings;
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const articles = await db.article.findMany('PUBLISHED');
+  const [articles, settings] = await Promise.all([
+    db.article.findMany('PUBLISHED'),
+    db.siteSettings.get(),
+  ]);
 
   return {
     props: {
       articles: JSON.parse(JSON.stringify(articles)),
+      settings: JSON.parse(JSON.stringify(settings)),
     },
   };
 };
 
-export default function NewsPage({ articles }: NewsPageProps) {
+export default function NewsPage({ articles, settings }: NewsPageProps) {
   const siteUrl = "https://www.genbiupnvjatim.com";
 
   return (
@@ -56,7 +61,7 @@ export default function NewsPage({ articles }: NewsPageProps) {
         </div>
       </main>
 
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

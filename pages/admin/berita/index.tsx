@@ -341,7 +341,7 @@ export default function AdminBeritaPage() {
                             alt={article.title}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as any).src = '/berita-1.jpg';
+                              (e.target as any).src = '/GenBI Webinar Career.png';
                             }}
                           />
                         </div>
