@@ -1,8 +1,8 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getSessionSecret, SESSION_SECRET_ERROR_MESSAGE } from './session-secret';
 
-const JWT_SECRET = process.env.SESSION_SECRET || 'genbi-default-jwt-secret-2026';
 export const AUTH_COOKIE_NAME = 'genbi_admin_token';
 
 export interface AdminPayload {
@@ -21,12 +21,18 @@ export function comparePassword(password: string, hash: string): boolean {
 }
 
 export function generateToken(payload: AdminPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+  const secret = getSessionSecret();
+  if (!secret) {
+    throw new Error(SESSION_SECRET_ERROR_MESSAGE);
+  }
+  return jwt.sign(payload, secret, { expiresIn: '7d' });
 }
 
 export function verifyToken(token: string): AdminPayload | null {
+  const secret = getSessionSecret();
+  if (!secret) return null;
   try {
-    return jwt.verify(token, JWT_SECRET) as AdminPayload;
+    return jwt.verify(token, secret) as AdminPayload;
   } catch {
     return null;
   }

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
@@ -102,6 +103,8 @@ async function startServer() {
     env: {
       ...process.env,
       DB_PROVIDER: 'json',
+      // Secret acak per-run agar test tidak bergantung pada SESSION_SECRET di .env developer
+      SESSION_SECRET: crypto.randomBytes(48).toString('hex'),
     },
     stdio: ['ignore', 'pipe', 'pipe'],
   });

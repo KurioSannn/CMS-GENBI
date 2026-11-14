@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getSessionSecret } from './lib/session-secret';
 
 const COOKIE_NAME = 'genbi_admin_token';
 
@@ -25,7 +26,8 @@ async function isValidAdminJwt(token: string | undefined): Promise<boolean> {
     const header = JSON.parse(decoder.decode(decodeBase64UrlToBytes(headerB64)));
     if (header?.alg !== 'HS256') return false;
 
-    const secret = process.env.SESSION_SECRET || 'genbi-default-jwt-secret-2026';
+    const secret = getSessionSecret();
+    if (!secret) return false;
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       'raw',
