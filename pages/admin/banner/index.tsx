@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import AdminLayout from '@/components/admin/AdminLayout';
 import FileUpload from '@/components/admin/FileUpload';
-import { Plus, Edit2, Trash2, CheckCircle2, XCircle, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface Banner {
@@ -37,7 +38,7 @@ export default function AdminBannerPage() {
       const res = await fetch('/api/admin/banner');
       const json = await res.json();
       if (json.success) setBanners(json.data);
-    } catch (e) {
+    } catch {
       toast.error('Gagal mengambil data banner');
     } finally {
       setLoading(false);
@@ -105,8 +106,8 @@ export default function AdminBannerPage() {
       toast.success(editingId ? 'Banner berhasil diperbarui' : 'Banner berhasil ditambahkan');
       setModalOpen(false);
       fetchBanners();
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal menyimpan');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal menyimpan'));
     } finally {
       setSaving(false);
     }
@@ -122,27 +123,27 @@ export default function AdminBannerPage() {
 
       toast.success('Banner dihapus');
       fetchBanners();
-    } catch (e: any) {
-      toast.error(e.message || 'Gagal menghapus');
+    } catch (e: unknown) {
+      toast.error(getErrorMessage(e, 'Gagal menghapus'));
     }
   };
 
   return (
     <AdminLayout
       title="Manajemen Banner Hero"
-      subtitle="Atur gambar carousel dan teks utama yang tampil di beranda website"
+      subtitle="Atur gambar carousel hero dan rilis utama yang tampil di beranda website."
       action={
         <button
           type="button"
           onClick={openCreateModal}
-          className="px-4 py-2 bg-[#0B1F40] hover:bg-[#16386e] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all"
+          className="px-4 py-2 bg-gradient-to-r from-[#0284C7] via-[#0EA5E9] to-[#38BDF8] hover:from-[#0369A1] hover:to-[#0284C7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-sky-500/25 transition-all"
         >
-          <Plus size={15} className="text-[#EAB308]" /> Tambah Banner
+          <Plus size={15} /> Tambah Banner
         </button>
       }
     >
       <Head>
-        <title>Banner Hero - GenBIHub CMS</title>
+        <title>Banner Hero - GenBIHub Admin</title>
       </Head>
 
       {/* Grid of Banners */}
@@ -314,7 +315,7 @@ export default function AdminBannerPage() {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 text-xs font-bold bg-[#0B1F40] hover:bg-[#16386e] text-white rounded-xl flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                  className="px-5 py-2 text-xs font-bold bg-gradient-to-r from-[#0284C7] via-[#0EA5E9] to-[#38BDF8] hover:from-[#0369A1] hover:to-[#0284C7] text-white rounded-xl flex items-center gap-1.5 shadow-sm shadow-sky-500/25 transition-all disabled:opacity-50"
                 >
                   {saving && <Loader2 size={14} className="animate-spin" />}
                   <span>{editingId ? 'Simpan Perubahan' : 'Terbitkan Banner'}</span>

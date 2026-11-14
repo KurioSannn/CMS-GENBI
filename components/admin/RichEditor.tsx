@@ -10,9 +10,6 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   Eye,
-  Code,
-  Undo,
-  Redo,
 } from 'lucide-react';
 
 interface RichEditorProps {

@@ -1,12 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import achievementController from '@/lib/controllers/achievement.controller';
-import { getAuthUser } from '@/lib/auth';
+import { parsePositiveId, requireAdminUser } from '@/lib/auth';
+import { getErrorMessage } from '@/lib/utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const user = getAuthUser(req);
-  if (!user && req.method !== 'GET') {
-    return res.status(401).json({ success: false, message: 'Unauthorized' });
-  }
+  const user = requireAdminUser(req, res);
+  if (!user) return;
 
   try {
     if (req.method === 'GET') {
@@ -20,19 +19,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (req.method === 'PUT') {
-      const { id, ...updates } = req.body;
-      const updated = await achievementController.update(Number(id), updates, user);
+      const { id, ...updates } = req.body || {};
+      const parsedId = parsePositiveId(id);
+      if (!parsedId) {
+        return res.status(400).json({ success: false, message: 'ID prestasi tidak valid' });
+      }
+      const updated = await achievementController.update(parsedId, updates, user);
       return res.status(200).json({ success: true, data: updated });
     }
 
     if (req.method === 'DELETE') {
-      const { id } = req.query;
-      await achievementController.delete(Number(id), user);
+      const parsedId = parsePositiveId(req.query.id);
+      if (!parsedId) {
+        return res.status(400).json({ success: false, message: 'ID prestasi tidak valid' });
+      }
+      await achievementController.delete(parsedId, user);
       return res.status(200).json({ success: true, message: 'Prestasi berhasil dihapus' });
     }
 
     return res.status(405).json({ success: false, message: 'Method not allowed' });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, message: error.message });
+  } catch (error: unknown) {
+    return res.status(500).json({ success: false, message: getErrorMessage(error) });
   }
 }

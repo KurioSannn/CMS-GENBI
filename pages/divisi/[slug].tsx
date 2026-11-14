@@ -1,27 +1,16 @@
 // pages/divisi/[slug].tsx
-import { GetStaticPaths, GetStaticProps } from 'next';
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { genbiDivisions, Division } from '@/data/members';
+import db, { Division, SiteSettings } from '@/lib/db';
 import MemberCard from '@/components/MemberCard';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Sparkles, Zap, Users, Calendar } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
-const DivisionPage = ({ division }: { division: Division }) => {
+const DivisionPage = ({ division, settings }: { division: Division; settings?: SiteSettings }) => {
   if (!division) return <div className="bg-[#050B18] min-h-screen" />;
-
-  const [isScrolled, setIsScrolled] = useState(false);
-  
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -63,7 +52,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
           <meta name="description" content={division.description} />
         </Head>
         
-        <Navbar isScrolled={isScrolled} />
+        <Navbar />
         
         <main className="bg-white min-h-screen overflow-hidden">
           {/* Hero Section - Navy Gelap Peat #050B18 */}
@@ -97,7 +86,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
                     <div className="relative w-52 h-52 md:w-64 md:h-64 bg-white rounded-full flex items-center justify-center p-1 shadow-[0_0_60px_rgba(255,255,255,0.1)] border-8 border-white/10 overflow-hidden">
                       <div className="relative w-full h-full rounded-full overflow-hidden">
                         <Image 
-                          src={division.logo} 
+                          src={division.logoUrl || '/bph.png'} 
                           alt={`${division.name} Logo`}
                           fill
                           className="object-cover transition-transform duration-700 hover:scale-110"
@@ -134,7 +123,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
 
                     <motion.div variants={itemVariants} className="flex justify-center lg:justify-start">
                       <p className="text-slate-400 text-lg md:text-xl font-medium italic border-l-4 border-yellow-500/50 pl-6 py-2">
-                        "{division.description}"
+                        &quot;{division.description}&quot;
                       </p>
                     </motion.div>
                   </div>
@@ -148,7 +137,7 @@ const DivisionPage = ({ division }: { division: Division }) => {
                   <div className="text-center">
                     <div className="flex items-center justify-center gap-3 mb-1">
                       <Users className="text-yellow-400" size={24} />
-                      <span className="text-4xl md:text-5xl font-black text-white">{division.members.length}</span>
+                      <span className="text-4xl md:text-5xl font-black text-white">{(division.members || []).length}</span>
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">Talenta Aktif</span>
                   </div>
@@ -190,41 +179,56 @@ const DivisionPage = ({ division }: { division: Division }) => {
                 </div>
               </motion.div>
 
-              <motion.div 
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: false, amount: 0.1 }}
-                variants={containerVariants}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10"
-              >
-                {division.members.map((member, index) => (
-                  <motion.div key={index} variants={itemVariants}>
-                    <MemberCard member={member} index={index} />
-                  </motion.div>
-                ))}
-              </motion.div>
+              {(division.members || []).length === 0 ? (
+                <div className="text-center py-16 px-6 bg-slate-50 rounded-3xl border border-slate-200 max-w-xl mx-auto">
+                  <Users className="mx-auto text-slate-400 mb-3" size={36} />
+                  <p className="text-slate-600 font-semibold text-base">
+                    Belum ada data anggota yang ditambahkan pada divisi ini.
+                  </p>
+                </div>
+              ) : (
+                <motion.div 
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: false, amount: 0.1 }}
+                  variants={containerVariants}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 md:gap-10"
+                >
+                  {(division.members || []).map((member, index) => (
+                    <motion.div key={index} variants={itemVariants}>
+                      <MemberCard member={member} index={index} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
 
             </div>
           </section>
         </main>
         
-        <Footer />
+        <Footer settings={settings} />
       </motion.div>
     </AnimatePresence>
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const paths = genbiDivisions.map((div) => ({ 
-    params: { slug: div.slug } 
-  }));
-  return { paths, fallback: false };
-};
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const slug = params?.slug as string;
+  const [division, settings] = await Promise.all([
+    db.division.findBySlug(slug),
+    db.siteSettings.get(),
+  ]);
 
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const division = genbiDivisions.find((div) => div.slug === params?.slug);
-  if (!division) return { notFound: true };
-  return { props: { division } };
+  if (!division) {
+    return { notFound: true };
+  }
+
+  return {
+    props: {
+      division: JSON.parse(JSON.stringify(division)),
+      settings: JSON.parse(JSON.stringify(settings)),
+    },
+  };
 };
 
 export default DivisionPage;

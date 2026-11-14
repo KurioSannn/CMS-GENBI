@@ -1,15 +1,27 @@
 // components/MemberCard.tsx
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import type { Member } from '@/data/members';
-import { BadgeCheck, GraduationCap, Sparkles, ExternalLink } from 'lucide-react';
+import { BadgeCheck, GraduationCap } from 'lucide-react';
+
+export interface MemberCardData {
+  id?: number;
+  name: string;
+  position?: string;
+  role?: string;
+  prodiAngkatan?: string | null;
+  imageUrl?: string | null;
+  imageGif?: string | null;
+}
 
 interface MemberCardProps {
-  member: Member;
+  member: MemberCardData;
   index: number;
 }
 
 const MemberCard = ({ member, index }: MemberCardProps) => {
+  const imageSrc = member.imageUrl || member.imageGif || '/foto profile genbiupnvjt.png';
+  const roleText = member.role || member.position || 'Anggota';
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -25,15 +37,15 @@ const MemberCard = ({ member, index }: MemberCardProps) => {
         {/* IMAGE SECTION - ASPEK RASIO DIKUNCI 3:4 */}
         <div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100">
           <Image 
-            src={member.imageGif} 
+            src={imageSrc} 
             alt={member.name} 
             fill
             className="object-cover transition-transform duration-700 group-hover:scale-110"
             unoptimized
-            priority
+            priority={index < 4}
           />
           
-          {/* Overlay Gradient (Halus di bagian bawah agar teks Nama terbaca) */}
+          {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F40]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
           {/* Floating Badge (Emas) */}
@@ -46,23 +58,25 @@ const MemberCard = ({ member, index }: MemberCardProps) => {
 
         {/* CONTENT SECTION */}
         <div className="relative p-6 text-center">
-          {/* Tag Posisi - Minimalis */}
+          {/* Tag Posisi */}
           <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-500 text-[#0B1F40] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg border-2 border-white">
-            {member.position}
+            {roleText}
           </div>
 
           <h3 className="mt-2 text-xl md:text-2xl font-black text-[#0B1F40] leading-tight mb-2 group-hover:text-yellow-600 transition-colors">
             {member.name}
           </h3>
 
-          <div className="flex items-center justify-center gap-2 text-slate-500">
-            <GraduationCap size={14} className="text-yellow-500" />
-            <span className="text-[11px] font-bold uppercase tracking-tighter italic">
-              {member.prodiAngkatan}
-            </span>
-          </div>
+          {member.prodiAngkatan && (
+            <div className="flex items-center justify-center gap-2 text-slate-500">
+              <GraduationCap size={14} className="text-yellow-500" />
+              <span className="text-[11px] font-bold uppercase tracking-tighter italic">
+                {member.prodiAngkatan}
+              </span>
+            </div>
+          )}
 
-          {/* Decorative bar yang memanjang saat hover */}
+          {/* Decorative bar */}
           <div className="mt-4 flex justify-center">
              <div className="h-1 w-8 bg-slate-100 rounded-full group-hover:w-20 group-hover:bg-yellow-500 transition-all duration-500" />
           </div>

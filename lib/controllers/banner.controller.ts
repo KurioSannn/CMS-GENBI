@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import db, { type Banner } from '@/lib/db';
 import { AdminPayload } from '@/lib/auth';
 
 export const bannerController = {
@@ -39,7 +39,7 @@ export const bannerController = {
     return banner;
   },
 
-  async update(id: number, data: any, user?: AdminPayload | null) {
+  async update(id: number, data: Partial<Banner>, user?: AdminPayload | null) {
     if (!id) throw new Error('ID banner wajib disertakan');
 
     const updated = await db.banner.update(Number(id), data);

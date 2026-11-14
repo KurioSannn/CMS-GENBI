@@ -1,149 +1,250 @@
 "use client";
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Newspaper, Home, User, Target, Grid, LayoutGrid, ChevronRight } from 'lucide-react';
-import { motion, AnimatePresence, useScroll, useTransform, useMotionValueEvent } from 'framer-motion';
+import { useRouter } from 'next/router';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { ArrowUpRight, Menu, X, Users, Trophy, Newspaper, FileText } from 'lucide-react';
 
-const Navbar = () => {
+interface NavbarProps {
+  isScrolled?: boolean;
+}
+
+const sectionNavItems = [
+  { label: "Beranda", href: "/#beranda" },
+  { label: "Prestasi", href: "/#prestasi" },
+  { label: "Tentang Kami", href: "/#tentang-kami" },
+  { label: "Pilar Mandat", href: "/#visi-misi" },
+  { label: "Warta Berita", href: "/#berita" },
+  { label: "Beasiswa & FAQ", href: "/#beasiswa-faq" },
+];
+
+const pageNavItems = [
+  {
+    label: "Profil & Struktur Pengurus",
+    desc: "Pembina, BPH, dan departemen strategis GenBI",
+    href: "/tentang",
+    icon: Users,
+  },
+  {
+    label: "Galeri & Rekam Prestasi",
+    desc: "Capaian akademik & penghargaan awardee",
+    href: "/prestasi",
+    icon: Trophy,
+  },
+  {
+    label: "Arsip Warta & Berita",
+    desc: "Liputan program kerja & publikasi redaksi",
+    href: "/berita",
+    icon: Newspaper,
+  },
+  {
+    label: "Arsip Dokumen & Panduan",
+    desc: "Unduhan berkas resmi & informasi beasiswa",
+    href: "/dokumen",
+    icon: FileText,
+  },
+];
+
+const Navbar: React.FC<NavbarProps> = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
   const { scrollY } = useScroll();
 
-  const headerBg = useTransform(scrollY, [0, 50], ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 0.9)"]);
-  const headerBlur = useTransform(scrollY, [0, 50], ["blur(0px)", "blur(20px)"]);
-  const navHeight = useTransform(scrollY, [0, 50], ["100px", "70px"]);
-  const shadowOpacity = useTransform(scrollY, [0, 50], ["0px 0px 0px rgba(0,0,0,0)", "0px 10px 30px rgba(0,0,0,0.05)"]);
-  const textColor = useTransform(scrollY, [0, 50], ["#FFFFFF", "#0B1F40"]);
+  const headerBg = useTransform(scrollY, [0, 40], ["rgba(255, 255, 255, 0.95)", "rgba(255, 255, 255, 0.98)"]);
+  const headerBlur = useTransform(scrollY, [0, 40], ["blur(12px)", "blur(20px)"]);
+  const navHeight = useTransform(scrollY, [0, 40], ["78px", "68px"]);
+  const shadowValue = useTransform(scrollY, [0, 40], ["0 1px 2px rgba(0,0,0,0.03)", "0 4px 20px rgba(7,18,36,0.06)"]);
 
-  const [isScrolled, setIsScrolled] = useState(false);
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    setIsScrolled(latest > 50);
-  });
-
-  // NavLinks yang sudah disesuaikan dengan sitemap dan page baru
-  const navLinks = [
-    { href: "/", label: "BERANDA", icon: <Home size={20} /> },
-    { href: "/profil", label: "PROFIL", icon: <User size={20} /> },
-    { href: "/#visi&misi", label: "VISI & MISI", icon: <Target size={20} /> },
-    { href: "/#program-divisi", label: "PROGRAM", icon: <Grid size={20} /> },
-    { href: "/#struktur-organisasi", label: "STRUKTUR", icon: <LayoutGrid size={20} /> },
-    // Link News sudah diarahkan ke halaman /news secara permanen
-    { href: "/news", label: "GENBI NEWS", isSpecial: true, icon: <Newspaper size={20} /> }, 
-  ];
-
-  const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, []);
 
   return (
     <>
-      <motion.header 
-        style={{ 
-          backgroundColor: headerBg, 
-          backdropFilter: headerBlur, 
+      <motion.header
+        style={{
+          backgroundColor: headerBg,
+          backdropFilter: headerBlur,
           height: navHeight,
-          boxShadow: shadowOpacity 
+          boxShadow: shadowValue,
         }}
-        className="fixed top-0 left-0 w-full z-[100] flex items-center transition-none border-b border-transparent"
+        className="fixed top-0 left-0 w-full z-[100] flex items-center border-b border-slate-200/80 transition-none"
       >
-        <div className="container mx-auto px-8 flex justify-between items-center">
-          
-          <Link href="/" className="flex items-center gap-4 group relative z-[110]">
-            <div className="relative w-12 h-12 transition-transform duration-500 group-hover:scale-110">
-              <Image src="/LogoBI.png" alt="Logo" fill className="object-contain" priority />
+        <div className="container mx-auto px-6 sm:px-12 max-w-7xl flex justify-between items-center gap-4">
+          {/* Brand Logo */}
+          <Link href="/" className="flex items-center gap-3.5 group shrink-0">
+            <div className="relative w-9 h-9 transition-transform duration-300 group-hover:scale-105">
+              <Image
+                src="/LogoBI.png"
+                alt="Bank Indonesia Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <motion.div style={{ color: textColor }} className="flex flex-col">
-              <span className="font-black text-2xl tracking-tighter uppercase leading-none">GENBI</span>
-              <span className="text-[10px] font-black tracking-[0.4em] uppercase text-[#EAB308]">UPNVJT</span>
-            </motion.div>
+
+            <div className="h-6 w-px bg-slate-300 hidden sm:block" />
+
+            <div className="flex items-center">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-[#071224] leading-none">
+                GenBI <span className="text-[#0284C7]">UPNVJT</span>
+              </span>
+            </div>
           </Link>
-          
-          <nav className="hidden lg:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <motion.div key={link.label} style={{ color: link.isSpecial ? "#0B1F40" : textColor }} className="relative">
-                <Link 
-                  href={link.href} 
-                  className={`relative group flex items-center gap-2 transition-all duration-300 ${
-                    link.isSpecial 
-                    ? 'px-6 py-2 bg-[#EAB308] rounded-full shadow-lg hover:bg-[#0B1F40] hover:text-white' 
-                    : ''
-                  }`}
-                  onMouseEnter={() => setHoveredLink(link.label)}
-                  onMouseLeave={() => setHoveredLink(null)}
-                >
-                  <motion.span 
-                    className="italic font-black text-[11px] uppercase tracking-[0.15em] relative z-10 whitespace-nowrap leading-none"
-                    animate={{
-                      color: hoveredLink === link.label 
-                        ? (link.isSpecial ? '#FFFFFF' : '#EAB308')
-                        : (link.isSpecial ? '#0B1F40' : textColor.get())
-                    }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {link.label}
-                  </motion.span>
-                  
-                  {link.isSpecial && (
-                    <motion.div animate={{ color: hoveredLink === link.label ? '#FFFFFF' : '#0B1F40' }} transition={{ duration: 0.3 }}>
-                      <Newspaper size={14} className="relative z-10" />
-                    </motion.div>
-                  )}
-                  
-                  {!link.isSpecial && (
-                    <motion.div 
-                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-[#EAB308] rounded-full"
-                      initial={{ scaleX: 0 }}
-                      animate={{ scaleX: hoveredLink === link.label ? 1 : 0 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  )}
-                </Link>
-              </motion.div>
+
+          {/* Desktop Navigation Links (Urut sesuai section Landing Page dari atas ke bawah) */}
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-7">
+            {sectionNavItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#071224] transition-colors py-2 relative group whitespace-nowrap"
+              >
+                <span>{item.label}</span>
+                <span className="absolute bottom-0 left-0 w-0 h-[2px] bg-[#0284C7] transition-all duration-300 group-hover:w-full" />
+              </Link>
             ))}
           </nav>
 
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)} 
-            className="lg:hidden relative z-[110] w-12 h-12 flex flex-col justify-center items-center rounded-xl bg-[#0B1F40] shadow-xl active:scale-90 transition-transform"
+          {/* Hamburger Trigger (Pengganti Portal CMS untuk navigasi pindah halaman & drawer mobile) */}
+          <button
+            type="button"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? "Tutup Menu" : "Buka Menu Halaman"}
+            aria-expanded={isMenuOpen}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-100/90 hover:bg-[#071224] text-[#071224] hover:text-white border border-slate-200/90 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer active:scale-95 shrink-0"
           >
-            <motion.div className="relative w-6 h-5 flex flex-col justify-between items-center" animate={{ color: isMenuOpen ? '#FFFFFF' : '#EAB308' }}>
-              <motion.span animate={{ rotate: isMenuOpen ? 45 : 0, y: isMenuOpen ? 9 : 0, backgroundColor: isMenuOpen ? '#FFFFFF' : '#EAB308' }} className="w-6 h-[3px] rounded-full" />
-              <motion.span animate={{ opacity: isMenuOpen ? 0 : 1, x: isMenuOpen ? 20 : 0, backgroundColor: isMenuOpen ? '#FFFFFF' : '#EAB308' }} className="w-6 h-[3px] rounded-full" />
-              <motion.span animate={{ rotate: isMenuOpen ? -45 : 0, y: isMenuOpen ? -9 : 0, backgroundColor: isMenuOpen ? '#FFFFFF' : '#EAB308' }} className="w-6 h-[3px] rounded-full" />
-            </motion.div>
+            {isMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            <span className="hidden sm:inline">Menu</span>
           </button>
         </div>
       </motion.header>
 
+      {/* Slide-over Hamburger Drawer Menu */}
       <AnimatePresence>
         {isMenuOpen && (
-          <motion.div
-            initial={{ y: "-100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "-100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 250 }}
-            className="fixed inset-0 z-[90] bg-[#0B1F40] lg:hidden flex flex-col pt-32 px-8"
-          >
-            <nav className="relative z-10 space-y-3">
-              {navLinks.map((link, idx) => (
-                <motion.div key={link.label} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 + (idx * 0.05) }}>
-                  <Link 
-                    href={link.href} 
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="fixed inset-0 bg-[#030A18]/45 backdrop-blur-xs z-[110]"
+            />
+
+            {/* Right Panel */}
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              className="fixed top-0 right-0 h-screen w-full max-w-md bg-white z-[120] shadow-2xl border-l border-slate-200 flex flex-col justify-between overflow-y-auto"
+            >
+              <div className="p-6 sm:p-8 space-y-8">
+                {/* Drawer Header */}
+                <div className="flex items-center justify-between border-b border-slate-200 pb-5">
+                  <div>
+                    <span className="font-extrabold text-xl tracking-tight text-[#071224] block">
+                      GenBI <span className="text-[#0284C7]">UPNVJT</span>
+                    </span>
+                    <span className="text-[11px] font-semibold text-slate-500">
+                      Direktori Halaman &amp; Navigasi
+                    </span>
+                  </div>
+                  <button
+                    type="button"
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center justify-between p-6 rounded-[2rem] border transition-all duration-300 relative group ${
-                      link.isSpecial ? 'bg-[#EAB308] border-[#EAB308] text-[#0B1F40]' : 'bg-white/5 border-white/10 text-white'
-                    }`}
+                    aria-label="Tutup Menu"
+                    className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
                   >
-                    <div className="flex items-center gap-4 font-black italic uppercase tracking-tight text-lg relative z-10">
-                      <div className={`p-2 rounded-xl ${link.isSpecial ? 'bg-[#0B1F40]/10 text-[#0B1F40]' : 'bg-white/10 text-[#EAB308]'}`}>
-                        {link.icon}
-                      </div>
-                      <span>{link.label}</span>
-                    </div>
-                    <ChevronRight size={20} className={link.isSpecial ? 'text-[#0B1F40]' : 'text-[#EAB308]'} />
-                  </Link>
-                </motion.div>
-              ))}
-            </nav>
-          </motion.div>
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Pages Group (Pindah Halaman) */}
+                <div className="space-y-3">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-[#0284C7] block">
+                    Halaman &amp; Direktori Resmi
+                  </span>
+                  <div className="space-y-2.5">
+                    {pageNavItems.map((page) => {
+                      const Icon = page.icon;
+                      const isActive = router.pathname === page.href || router.pathname.startsWith(`${page.href}/`);
+                      return (
+                        <Link
+                          key={page.href}
+                          href={page.href}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={`group flex items-start justify-between gap-3 p-4 rounded-2xl border transition-all ${
+                            isActive
+                              ? 'bg-sky-50/90 border-[#0284C7] shadow-xs'
+                              : 'bg-slate-50/70 hover:bg-white border-slate-200/80 hover:border-[#0284C7]/60 hover:shadow-md'
+                          }`}
+                        >
+                          <div className="flex items-start gap-3.5">
+                            <div
+                              className={`p-2.5 rounded-xl shrink-0 transition-colors ${
+                                isActive
+                                  ? 'bg-[#0284C7] text-white'
+                                  : 'bg-white text-[#0284C7] border border-slate-200/80 group-hover:bg-[#0284C7] group-hover:text-white'
+                              }`}
+                            >
+                              <Icon size={17} />
+                            </div>
+                            <div>
+                              <span className="text-sm font-extrabold text-[#071224] group-hover:text-[#0284C7] transition-colors block">
+                                {page.label}
+                              </span>
+                              <span className="text-xs text-slate-500 leading-snug block mt-0.5">
+                                {page.desc}
+                              </span>
+                            </div>
+                          </div>
+                          <ArrowUpRight
+                            size={16}
+                            className="text-slate-400 group-hover:text-[#0284C7] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 mt-1"
+                          />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Mobile/Tablet Section Links (Urut sesuai Landing Page) */}
+                <div className="space-y-3 pt-4 border-t border-slate-200 lg:hidden">
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 block">
+                    Bagian Halaman Utama
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    {sectionNavItems.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsMenuOpen(false)}
+                        className="px-3.5 py-2.5 rounded-xl bg-slate-50 hover:bg-sky-50 border border-slate-200/80 hover:border-[#0284C7]/50 text-xs font-bold text-slate-700 hover:text-[#0284C7] transition-colors"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Drawer Footer */}
+              <div className="p-6 sm:px-8 border-t border-slate-200 bg-slate-50/70">
+                <p className="text-[11px] font-semibold text-slate-500">
+                  GenBI Komisariat UPN &quot;Veteran&quot; Jawa Timur • Energi untuk Negeri
+                </p>
+              </div>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
     </>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, VolumeX, Volume1, Smartphone } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 
 const BackgroundMusic = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -14,6 +14,7 @@ const BackgroundMusic = () => {
   const volumePanelRef = useRef<HTMLDivElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const hasInteracted = useRef(false);
+  const initialVolumeRef = useRef(volume);
 
   // 1. Deteksi Device & Window Resize
   useEffect(() => {
@@ -27,9 +28,8 @@ const BackgroundMusic = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Pastikan path sesuai dengan file di folder public kamu
     const audio = new Audio('/mars-genbi.mp3'); 
-    audio.volume = volume;
+    audio.volume = initialVolumeRef.current;
     audio.loop = true;
     audioRef.current = audio;
 
@@ -44,7 +44,6 @@ const BackgroundMusic = () => {
       }
     };
 
-    // Trigger otomatis yang lebih agresif untuk Next.js
     const events = ['click', 'touchstart', 'scroll', 'wheel'];
     events.forEach(event => document.addEventListener(event, handleInteraction, { once: true }));
 
@@ -76,11 +75,10 @@ const BackgroundMusic = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 5. Logic Drag Slider yang Aman untuk TypeScript
-  const handleSliderMove = (e: React.MouseEvent | MouseEvent) => {
+  const handleSliderMove = (e: React.MouseEvent | MouseEvent | TouchEvent) => {
     if (!sliderRef.current) return;
     const rect = sliderRef.current.getBoundingClientRect();
-    const clientX = 'clientX' in e ? e.clientX : (e as any).touches[0].clientX;
+    const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
     const clickX = clientX - rect.left;
     const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
     const newVolume = percentage / 100;
@@ -123,9 +121,9 @@ const BackgroundMusic = () => {
         <div className="bg-[#0B1F40]/95 backdrop-blur-xl border border-white/10 rounded-2xl p-5 shadow-2xl">
           <div className="flex justify-between items-center mb-4">
             <span className="text-[10px] font-black text-white/40 uppercase tracking-widest italic">
-              {isMobile ? 'Mobile Audio' : 'Master Control'}
+              {isMobile ? 'Mobile Audio' : 'Audio Control'}
             </span>
-            <span className={`text-xs font-bold ${isMuted ? 'text-red-400' : 'text-yellow-400'}`}>
+            <span className={`text-xs font-bold ${isMuted ? 'text-red-400' : 'text-sky-400'}`}>
               {Math.round(volume * 100)}%
             </span>
           </div>
@@ -137,11 +135,11 @@ const BackgroundMusic = () => {
             onClick={(e) => handleSliderMove(e as unknown as MouseEvent)}
           >
             <div 
-              className="absolute top-0 left-0 h-full bg-yellow-500 rounded-full transition-all duration-150"
+              className="absolute top-0 left-0 h-full bg-[#0284C7] rounded-full transition-all duration-150"
               style={{ width: `${isMuted ? 0 : volume * 100}%` }}
             />
             <div 
-              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-yellow-500 rounded-full shadow-lg"
+              className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-[#0284C7] rounded-full shadow-lg"
               style={{ left: `${isMuted ? 0 : volume * 100}%`, transform: 'translate(-50%, -50%)' }}
             />
           </div>
@@ -152,7 +150,7 @@ const BackgroundMusic = () => {
               <button
                 key={p}
                 onClick={() => setVolume(p / 100)}
-                className="py-1.5 text-[10px] font-bold rounded-lg bg-white/5 text-white/60 hover:bg-yellow-500 hover:text-[#0B1F40] transition-all"
+                className="py-1.5 text-[10px] font-bold rounded-lg bg-white/5 text-white/60 hover:bg-[#0284C7] hover:text-white transition-all"
               >
                 {p}%
               </button>
@@ -161,42 +159,18 @@ const BackgroundMusic = () => {
         </div>
       </div>
 
-      {/* Main Trigger Button */}
+      {/* Main Trigger Button (Minimalist Glass Circle - Zero Noise) */}
       <button
         onClick={handleButtonClick}
-        className={`group relative p-4 rounded-2xl border transition-all duration-500 ${
-          isMuted ? 'bg-red-500/10 border-red-500/50' : 'bg-[#0B1F40]/90 border-white/20 hover:border-yellow-500/50'
-        } shadow-2xl active:scale-90`}
+        aria-label="Kontrol Audio Musik"
+        className="w-11 h-11 rounded-full bg-black/40 hover:bg-black/75 backdrop-blur-md border border-white/15 hover:border-white/35 text-white/80 hover:text-white flex items-center justify-center shadow-xl transition-all duration-300 active:scale-90"
       >
-        <div className="relative z-10 flex items-center gap-3">
-          {isMuted || volume === 0 ? <VolumeX className="text-red-400" /> : volume < 0.5 ? <Volume1 className="text-yellow-400" /> : <Volume2 className="text-yellow-400" />}
-          
-          {/* Visualizer bars (Desktop Only) */}
-          {!isMobile && !isMuted && isPlaying && (
-            <div className="flex items-end gap-1 h-4">
-              {[0.4, 1, 0.6].map((h, i) => (
-                <div 
-                  key={i} 
-                  className="w-1 bg-yellow-500 rounded-full animate-bounce" 
-                  style={{ height: `${h * 100}%`, animationDuration: '0.6s', animationDelay: `${i * 0.1}s` }} 
-                />
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Status Indicator Dot */}
-        <div className={`absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-[#050B18] ${
-          isMuted ? 'bg-red-500' : isPlaying ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'
-        }`} />
+        {isMuted || volume === 0 ? (
+          <VolumeX size={18} className="text-white/60" />
+        ) : (
+          <Volume2 size={18} className="text-white" />
+        )}
       </button>
-
-      {/* Tooltip Info */}
-      <div className="absolute bottom-full right-0 mb-20 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-         <div className="bg-black/80 text-white text-[10px] px-3 py-1 rounded-full whitespace-nowrap">
-            Double Click to Mute
-         </div>
-      </div>
     </div>
   );
 };

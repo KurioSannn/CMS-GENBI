@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     return await authController.login(req, res);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Login error:', error);
     return res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server' });
   }

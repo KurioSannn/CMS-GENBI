@@ -4,7 +4,7 @@
   import { motion } from 'framer-motion';
   import Link from 'next/link';
   import Image from 'next/image';
-  import { genbiDivisions } from '@/data/members';
+  import type { Division } from '@/lib/db';
   import { Sparkles, ChevronRight, MoveRight } from 'lucide-react';
 
   // --- SWIPER IMPORTS ---
@@ -16,21 +16,20 @@
   import 'swiper/css/free-mode';
   import 'swiper/css/pagination';
 
-  // PASTIKAN BARIS INI ADA:
-  const Struktur = () => {
+  interface StrukturProps {
+    divisions?: Division[];
+  }
+
+  const Struktur = ({ divisions }: StrukturProps) => {
     // FIX: Tipe data harus dikunci dengan 'as const' agar Vercel tidak error
-const smoothSpring: any = {
-  type: "spring",
+const smoothSpring = {
+  type: "spring" as const,
   stiffness: 40,
   damping: 12,
   mass: 0.8
 };
 
     const perspectiveStyle = { perspective: "2000px" };
-    const backfaceStyle = { 
-      backfaceVisibility: "hidden" as const,
-      WebkitBackfaceVisibility: "hidden" as const,
-    };
 
     return (
       <section id="struktur-organisasi" className="relative py-28 md:py-36 bg-[#030712] overflow-hidden">
@@ -100,7 +99,7 @@ const smoothSpring: any = {
               pagination={{ clickable: true, dynamicBullets: true }}
               className="!pb-32 !pt-10 overflow-visible"
             >
-              {genbiDivisions.map((division, idx) => (
+              {(divisions || []).map((division, idx) => (
                 <SwiperSlide key={division.slug} className="!h-auto !overflow-visible" style={{ ...perspectiveStyle, transformStyle: 'preserve-3d' }}>
                   <motion.div 
                     initial={{ opacity: 0, y: 40 }}
@@ -135,7 +134,7 @@ const smoothSpring: any = {
                       <h3 className="text-3xl font-bold text-white mb-4 tracking-tight italic text-left">{division.name}</h3>
                       <p className="text-slate-400 text-sm leading-relaxed font-light line-clamp-4 mb-8 italic text-left">{division.description}</p>
                       <div className="mt-auto flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">{division.members.length} Talenta</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest italic">{(division.members || []).length} Talenta</span>
                       </div>
                     </div>
 
@@ -151,7 +150,7 @@ const smoothSpring: any = {
                     >
                       <div className="w-32 h-32 bg-white rounded-[3rem] flex items-center justify-center p-6 mb-10 shadow-[0_20px_50px_rgba(255,255,255,0.1)] overflow-hidden relative border-4 border-white/20">
                         <Image 
-                          src={division.logo} 
+                          src={division.logoUrl || '/bph.png'} 
                           alt={`${division.name} logo`} 
                           fill 
                           className="p-6 object-contain" 

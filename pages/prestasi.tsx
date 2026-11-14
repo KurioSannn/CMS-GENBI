@@ -1,18 +1,38 @@
-// pages/prestasi.tsx
+import { GetServerSideProps } from 'next';
 import Head from 'next/head';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import Prestasi from '@/components/Prestasi'; 
 import { motion } from 'framer-motion';
+import db, { Achievement, SiteSettings } from '@/lib/db';
 
-export default function PrestasiPage() {
+interface PrestasiPageProps {
+  achievements: Achievement[];
+  settings?: SiteSettings;
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const [achievements, settings] = await Promise.all([
+    db.achievement.findMany(),
+    db.siteSettings.get(),
+  ]);
+
+  return {
+    props: {
+      achievements: JSON.parse(JSON.stringify(achievements)),
+      settings: JSON.parse(JSON.stringify(settings)),
+    },
+  };
+};
+
+export default function PrestasiPage({ achievements, settings }: PrestasiPageProps) {
   return (
     <>
       <Head>
         <title>Prestasi GenBI - UPN Veteran Jawa Timur</title>
       </Head>
       
-      <Navbar />
+      <Navbar isScrolled={true} />
       
       <main className="pt-24 min-h-screen bg-gray-50">
         
@@ -41,19 +61,19 @@ export default function PrestasiPage() {
                     Hall of Fame
                 </motion.h1>
                 <p className="text-yellow-100 text-lg max-w-2xl mx-auto">
-                    Jejak langkah prestasi dan kontribusi nyata GenBI UPN "Veteran" Jawa Timur untuk negeri.
+                    Jejak langkah prestasi dan kontribusi nyata GenBI UPN &quot;Veteran&quot; Jawa Timur untuk negeri.
                 </p>
              </div>
         </section>
 
         {/* Render Komponen Prestasi */}
-        <Prestasi />
+        <Prestasi achievements={achievements} />
         
         {/* Di sini bisa ditambahkan list prestasi lain di masa depan */}
 
       </main>
       
-      <Footer />
+      <Footer settings={settings} />
     </>
   );
 }

@@ -2,13 +2,14 @@ import React, { useState, useRef, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import ReactCrop, { Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { UploadCloud, X, Check, Crop as CropIcon, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { UploadCloud, X, Check, Crop as CropIcon, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 
 interface FileUploadProps {
   value?: string | null;
   onChange: (url: string) => void;
-  scope?: 'banner' | 'members' | 'berita' | 'prestasi' | 'dokumen' | 'general';
+  scope?: 'banner' | 'members' | 'berita' | 'prestasi' | 'dokumen' | 'general' | 'divisi';
   aspectRatio?: number; // e.g. 1 for 1:1, 16/9 for 16:9
   acceptPdf?: boolean;
   label?: string;
@@ -38,7 +39,7 @@ export default function FileUpload({
   aspectRatio,
   acceptPdf = false,
   label = 'Unggah File',
-  helperText = 'Maksimal ukuran 15MB',
+  helperText = 'Maksimal 4MB per unggahan (gambar dikompresi saat crop)',
 }: FileUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [imgSrc, setImgSrc] = useState<string>('');
@@ -47,7 +48,39 @@ export default function FileUpload({
   const [isCroppingOpen, setIsCroppingOpen] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  const onSelectFile = (file: File) => {
+  const uploadDirect = useCallback(async (file: File | Blob, filename: string = 'file.webp') => {
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file, filename);
+    formData.append('scope', scope);
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      if (res.status === 413) {
+        throw new Error(
+          'Ukuran file terlalu besar untuk batas server Vercel (maksimal ~4 MB). Silakan crop atau perkecil ukuran file.'
+        );
+      }
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        throw new Error(json?.message || `Gagal mengunggah (HTTP ${res.status})`);
+      }
+
+      onChange(json.data.url);
+      toast.success('File berhasil diunggah!');
+      setIsCroppingOpen(false);
+      setImgSrc('');
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, 'Gagal mengunggah file'));
+    } finally {
+      setIsUploading(false);
+    }
+  }, [onChange, scope]);
+
+  const onSelectFile = useCallback((file: File) => {
     if (file.type === 'application/pdf') {
       // Direct upload for PDF
       uploadDirect(file);
@@ -65,34 +98,7 @@ export default function FileUpload({
       setIsCroppingOpen(true);
     });
     reader.readAsDataURL(file);
-  };
-
-  const uploadDirect = async (file: File | Blob, filename: string = 'file.webp') => {
-    setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file, filename);
-    formData.append('scope', scope);
-
-    try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const json = await res.json();
-      if (!res.ok || !json.success) {
-        throw new Error(json.message || 'Gagal mengunggah');
-      }
-
-      onChange(json.data.url);
-      toast.success('File berhasil diunggah!');
-      setIsCroppingOpen(false);
-      setImgSrc('');
-    } catch (err: any) {
-      toast.error(err.message || 'Gagal mengunggah file');
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  }, [uploadDirect]);
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     if (aspectRatio) {
@@ -159,7 +165,7 @@ export default function FileUpload({
     if (acceptedFiles.length > 0) {
       onSelectFile(acceptedFiles[0]);
     }
-  }, []);
+  }, [onSelectFile]);
 
   const acceptConfig: Record<string, string[]> = acceptPdf
     ? {

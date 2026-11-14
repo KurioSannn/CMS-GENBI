@@ -1,10 +1,30 @@
-import Head from 'next/head'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-// Import komponen daftar berita kamu jika sudah ada
-import GenBINews from '@/components/GenBINews' 
+import { GetServerSideProps } from 'next';
+import Head from 'next/head';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import GenBINews from '@/components/GenBINews';
+import db, { Article, SiteSettings } from '@/lib/db';
 
-export default function NewsPage() {
+interface NewsPageProps {
+  articles: Article[];
+  settings?: SiteSettings;
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const [articles, settings] = await Promise.all([
+    db.article.findMany('PUBLISHED'),
+    db.siteSettings.get(),
+  ]);
+
+  return {
+    props: {
+      articles: JSON.parse(JSON.stringify(articles)),
+      settings: JSON.parse(JSON.stringify(settings)),
+    },
+  };
+};
+
+export default function NewsPage({ articles, settings }: NewsPageProps) {
   const siteUrl = "https://www.genbiupnvjatim.com";
 
   return (
@@ -33,21 +53,15 @@ export default function NewsPage() {
         />
       </Head>
 
-      <Navbar />
+      <Navbar isScrolled={true} />
 
-      <main className="pt-20 min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-10">
-          <h1 className="text-4xl font-bold text-center mb-4 text-blue-900">GenBI News</h1>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            Dokumentasi seluruh rangkaian kegiatan dan aksi nyata kami sebagai garda terdepan bagi bangsa.
-          </p>
-          
-          {/* Memanggil komponen berita yang sudah kamu punya */}
-          <GenBINews /> 
+      <main className="pt-24 min-h-screen bg-[#F8FAFC]">
+        <div className="container mx-auto px-4 py-8">
+          <GenBINews articles={articles} /> 
         </div>
       </main>
 
-      <Footer />
+      <Footer settings={settings} />
     </>
-  )
+  );
 }

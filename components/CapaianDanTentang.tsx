@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { motion, useMotionValue, useTransform, animate, useInView } from "framer-motion";
 import { Users, Zap, Star, TrendingUp, Award, History, Landmark, ShieldCheck } from "lucide-react";
 import Image from 'next/image';
+import { mergeSiteSettings, SiteSettings } from "@/lib/site-settings";
 
 const Counter = ({ value, duration = 2 }: { value: number; duration?: number }) => {
   const count = useMotionValue(0);
@@ -27,12 +28,17 @@ const Counter = ({ value, duration = 2 }: { value: number; duration?: number }) 
   return <span ref={ref}>{displayValue}</span>;
 };
 
-const CapaianDanTentang = () => {
-  const stats = [
-    { label: "ANGGOTA AKTIF", value: 100, suffix: "+", sub: "MAHASISWA TERPILIH", icon: <Users size={100} /> },
-    { label: "PROKER TERLAKSANA", value: 50, suffix: "+", sub: "TAHUNAN", icon: <TrendingUp size={100} /> },
-    { label: "IPK RATA-RATA", value: 3.75, suffix: "", sub: "PRESTASI AKADEMIK", icon: <Award size={100} />, isFloat: true },
-  ];
+interface CapaianDanTentangProps {
+  settings?: SiteSettings;
+}
+
+const CapaianDanTentang = ({ settings }: CapaianDanTentangProps) => {
+  const cfg = mergeSiteSettings(settings);
+  const icons = [<Users key="u" size={100} />, <TrendingUp key="t" size={100} />, <Award key="a" size={100} />];
+  const stats = cfg.stats.map((s, idx) => ({
+    ...s,
+    icon: icons[idx % icons.length],
+  }));
 
   return (
     <div className="overflow-hidden bg-[#F8FAFC]">
@@ -52,7 +58,7 @@ const CapaianDanTentang = () => {
                 Generasi Baru
               </span> <br />
               <span className="text-[#EAB308] text-2xl md:text-4xl mt-2 block">
-                UPN "Veteran" Jawa Timur
+                UPN &quot;Veteran&quot; Jawa Timur
               </span>
             </h2>
           </motion.div>
@@ -72,7 +78,7 @@ const CapaianDanTentang = () => {
                 </div>
                 <div className="relative z-10 text-left">
                   <h3 className="text-7xl font-black text-[#0B1F40] mb-4 group-hover:text-yellow-600 transition-colors italic">
-                    {stat.isFloat ? "3.75" : <Counter value={stat.value} />}
+                    {stat.isFloat ? stat.value : <Counter value={stat.value} />}
                     {stat.suffix}
                   </h3>
                   <span className="block text-lg font-extrabold text-slate-800 tracking-tight uppercase italic">{stat.label}</span>
@@ -104,16 +110,18 @@ const CapaianDanTentang = () => {
                 Sejarah <br /><span className="bg-gradient-to-r from-[#EAB308] via-[#FDE68A] to-[#B45309] bg-clip-text text-transparent">GenBI.</span>
               </h2>
               <div className="space-y-6 text-slate-300 text-lg leading-relaxed text-left">
-                <p>
-                  Generasi Baru Indonesia (GenBI) resmi didirikan pada tanggal <span className="text-white font-bold">11 November 2011</span>. 
-                  Komunitas ini lahir atas inisiasi Bank Indonesia sebagai wadah bagi para mahasiswa terpilih penerima beasiswa Bank Indonesia yang tersebar di seluruh pelosok negeri.
-                </p>
-                <p className="bg-white/5 p-8 rounded-[2rem] border-l-4 border-yellow-500 italic shadow-2xl">
-                  "GenBI tidak hanya sekadar kelompok penerima bantuan finansial, melainkan sebuah laboratorium kepemimpinan yang dibentuk untuk mengasah jiwa sosial dan kompetensi mahasiswa guna mempersiapkan pemimpin bangsa di masa depan."
-                </p>
-                <p>
-                  Di lingkungan UPN "Veteran" Jawa Timur, GenBI terus bertransformasi menjadi energi progresif yang aktif dalam mendukung program kerja Bank Indonesia dan pengabdian masyarakat.
-                </p>
+                {cfg.historyParagraphs.map((paragraph, idx) => (
+                  <p
+                    key={idx}
+                    className={
+                      idx === 1
+                        ? "bg-white/5 p-8 rounded-[2rem] border-l-4 border-yellow-500 italic shadow-2xl"
+                        : ""
+                    }
+                  >
+                    {paragraph}
+                  </p>
+                ))}
               </div>
 
 {/* Area 3 Polaroid Photos */}

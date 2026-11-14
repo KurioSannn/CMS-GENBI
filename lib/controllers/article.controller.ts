@@ -1,4 +1,4 @@
-import db from '@/lib/db';
+import db, { type Article } from '@/lib/db';
 import { AdminPayload } from '@/lib/auth';
 import { slugify } from '@/lib/utils';
 
@@ -32,7 +32,7 @@ export const articleController = {
       throw new Error('Judul, cover image, dan isi artikel wajib diisi');
     }
 
-    let baseSlug = slugify(data.title);
+    const baseSlug = slugify(data.title);
     let uniqueSlug = baseSlug;
     let counter = 1;
     while (await db.article.findBySlug(uniqueSlug)) {
@@ -61,7 +61,7 @@ export const articleController = {
     return article;
   },
 
-  async update(id: number, data: any, user?: AdminPayload | null) {
+  async update(id: number, data: Partial<Article>, user?: AdminPayload | null) {
     if (!id) throw new Error('ID berita wajib disertakan');
 
     if (data.title && !data.slug) {

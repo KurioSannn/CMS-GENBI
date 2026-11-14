@@ -2,136 +2,70 @@ import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
 import { genbiDivisions } from '../data/members';
+import {
+  DEFAULT_SITE_SETTINGS,
+  mergeSiteSettings,
+  SiteSettings,
+} from './site-settings';
+import { isFirestoreConfigured } from './firebase-admin';
+import { firestoreDb, readDatabaseFromFirestore } from './db-firestore';
+import type {
+  AdminUser,
+  Banner,
+  BphMember,
+  DivisionMember,
+  Division,
+  Article,
+  Achievement,
+  DocumentArchive,
+  ActivityLog,
+  Category,
+  DatabaseSchema,
+} from './db-types';
 
-export interface AdminUser {
-  id: number;
-  username: string;
-  email: string;
-  passwordHash: string;
-  name: string;
-  role: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Banner {
-  id: number;
-  title: string;
-  subtitle?: string | null;
-  imageUrl: string;
-  buttonText?: string | null;
-  buttonUrl?: string | null;
-  sortOrder: number;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface BphMember {
-  id: number;
-  name: string;
-  category: string; // "PEMBINA" | "KETUA" | "WAKIL" | "SEKRETARIS" | "BENDAHARA"
-  position: string;
-  imageUrl: string;
-  quote?: string | null;
-  instagram?: string | null;
-  linkedin?: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface DivisionMember {
-  id: number;
-  divisionId: number;
-  name: string;
-  role: string;
-  prodiAngkatan?: string | null;
-  imageUrl: string;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Division {
-  id: number;
-  name: string;
-  slug: string;
-  tagline?: string | null;
-  description: string;
-  logoUrl?: string | null;
-  teamPhotoUrl?: string | null;
-  sortOrder: number;
-  members: DivisionMember[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Article {
-  id: number;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  coverImage: string;
-  category: string;
-  author: string;
-  status: 'DRAFT' | 'PUBLISHED';
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Achievement {
-  id: number;
-  title: string;
-  recipient: string;
-  competition: string;
-  badge?: string | null;
-  rank: string; // "gold" | "silver" | "bronze"
-  year: string;
-  imageUrl: string;
-  description?: string | null;
-  sortOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface DocumentArchive {
-  id: number;
-  title: string;
-  category: string; // "SK" | "LPJ" | "BEASISWA" | "PROPOSAL"
-  fileUrl: string;
-  fileSize?: string | null;
-  description?: string | null;
-  publishedAt: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface ActivityLog {
-  id: number;
-  adminId?: number | null;
-  adminName?: string | null;
-  action: string;
-  description: string;
-  ipAddress?: string | null;
-  createdAt: string;
-}
-
-interface DatabaseSchema {
-  adminUsers: AdminUser[];
-  banners: Banner[];
-  bphMembers: BphMember[];
-  divisions: Division[];
-  divisionMembers: DivisionMember[];
-  articles: Article[];
-  achievements: Achievement[];
-  documents: DocumentArchive[];
-  activityLogs: ActivityLog[];
-}
+export type { SiteSettings, SiteStatItem, SitePosterItem, SiteFaqItem } from './site-settings';
+export { DEFAULT_SITE_SETTINGS, mergeSiteSettings } from './site-settings';
+export type {
+  AdminUser,
+  Banner,
+  BphMember,
+  DivisionMember,
+  Division,
+  Article,
+  Achievement,
+  DocumentArchive,
+  ActivityLog,
+  Category,
+  DatabaseSchema,
+} from './db-types';
 
 const DB_FILE_PATH = path.join(process.cwd(), 'data', 'genbihub.db.json');
+
+function getInitialCategories(now: string): Category[] {
+  const seedList = [
+    { name: 'Edukasi BI & CBP Rupiah', slug: 'edukasi-bi', type: 'ARTICLE', description: 'Literasi kebijakan Bank Indonesia, Cinta Bangga Paham Rupiah, dan QRIS.', sortOrder: 1 },
+    { name: 'Sosial Lingkungan', slug: 'sosial-lingkungan', type: 'ARTICLE', description: 'Aksi peduli lingkungan, penanaman pohon, dan bakti sosial masyarakat.', sortOrder: 2 },
+    { name: 'Ekonomi Kreatif & UMKM', slug: 'ekonomi-kreatif', type: 'ARTICLE', description: 'Digitalisasi UMKM dan kewirausahaan mahasiswa.', sortOrder: 3 },
+    { name: 'Rilis Kegiatan & Proker', slug: 'rilis-kegiatan', type: 'ARTICLE', description: 'Dokumentasi dan berita pelaksanaan kegiatan divisi.', sortOrder: 4 },
+    { name: 'Opini & Artikel Anggota', slug: 'opini-anggota', type: 'ARTICLE', description: 'Karya tulis, gagasan, dan opini mahasiswa penerima beasiswa.', sortOrder: 5 },
+    { name: 'SK & Surat Keputusan', slug: 'sk-resmi', type: 'DOCUMENT', description: 'Surat Keputusan Rektor & Bank Indonesia mengenai penerima beasiswa dan pengurus.', sortOrder: 1 },
+    { name: 'Laporan Pertanggungjawaban (LPJ)', slug: 'lpj-divisi', type: 'DOCUMENT', description: 'Arsip LPJ kegiatan program kerja per divisi.', sortOrder: 2 },
+    { name: 'Panduan Beasiswa BI', slug: 'panduan-beasiswa', type: 'DOCUMENT', description: 'Buku panduan pendaftaran, kriteria IPK, dan berkas seleksi beasiswa.', sortOrder: 3 },
+    { name: 'Template & Format Proposal', slug: 'template-proposal', type: 'DOCUMENT', description: 'Template baku proposal kegiatan dan pengajuan sponsorship.', sortOrder: 4 },
+    { name: 'AD/ART & Tata Tertib', slug: 'ad-art', type: 'DOCUMENT', description: 'Anggaran Dasar dan Anggaran Rumah Tangga organisasi GenBI.', sortOrder: 5 },
+  ];
+
+  return seedList.map((cat, idx) => ({
+    id: idx + 1,
+    name: cat.name,
+    slug: cat.slug,
+    type: cat.type,
+    description: cat.description,
+    sortOrder: cat.sortOrder,
+    createdAt: now,
+    updatedAt: now,
+  }));
+}
 
 // Inisialisasi Data Default Pertama Kali
 function getInitialData(): DatabaseSchema {
@@ -429,30 +363,7 @@ function getInitialData(): DatabaseSchema {
         updatedAt: now,
       },
     ],
-    documents: [
-      {
-        id: 1,
-        title: 'Buku Panduan Pendaftaran Beasiswa Bank Indonesia 2026',
-        category: 'BEASISWA',
-        fileUrl: '/panduan-beasiswa-bi-2026.pdf',
-        fileSize: '1.8 MB',
-        description: 'Panduan persyaratan administratif, kriteria IPK, dan alur seleksi Beasiswa BI 2026.',
-        publishedAt: now,
-        createdAt: now,
-        updatedAt: now,
-      },
-      {
-        id: 2,
-        title: 'Surat Keputusan (SK) Pengurus GenBI UPNVJT Periode 2025/2026',
-        category: 'SK',
-        fileUrl: '/sk-pengurus-genbi-2025-2026.pdf',
-        fileSize: '840 KB',
-        description: 'SK resmi penetapan Pembina, BPH, dan Anggota Divisi GenBI UPN "Veteran" Jawa Timur.',
-        publishedAt: now,
-        createdAt: now,
-        updatedAt: now,
-      },
-    ],
+    documents: [],
     activityLogs: [
       {
         id: 1,
@@ -462,11 +373,13 @@ function getInitialData(): DatabaseSchema {
         createdAt: now,
       },
     ],
+    categories: getInitialCategories(now),
+    siteSettings: { ...DEFAULT_SITE_SETTINGS, updatedAt: now },
   };
 }
 
 // Helper membaca & menulis database atomic
-function readDb(): DatabaseSchema {
+export function readDb(): DatabaseSchema {
   try {
     if (!fs.existsSync(DB_FILE_PATH)) {
       const initial = getInitialData();
@@ -475,11 +388,23 @@ function readDb(): DatabaseSchema {
       return initial;
     }
     const raw = fs.readFileSync(DB_FILE_PATH, 'utf-8');
-    return JSON.parse(raw) as DatabaseSchema;
+    const parsed = JSON.parse(raw) as Partial<DatabaseSchema>;
+    if (!Array.isArray(parsed.categories)) {
+      parsed.categories = getInitialCategories(new Date().toISOString());
+    }
+    parsed.siteSettings = mergeSiteSettings(parsed.siteSettings);
+    return parsed as DatabaseSchema;
   } catch (err) {
     console.error('Error reading database file, resetting to initial:', err);
     return getInitialData();
   }
+}
+
+export async function readDatabase(): Promise<DatabaseSchema> {
+  if (isFirestoreConfigured()) {
+    return readDatabaseFromFirestore();
+  }
+  return readDb();
 }
 
 function writeDb(data: DatabaseSchema): void {
@@ -494,8 +419,8 @@ function writeDb(data: DatabaseSchema): void {
   }
 }
 
-// Database Repository Object
-export const db = {
+// Local JSON Database Repository Object
+export const jsonDb = {
   // --- ADMIN USERS ---
   adminUser: {
     findFirst: async (predicate?: (user: AdminUser) => boolean) => {
@@ -509,6 +434,18 @@ export const db = {
         (email && u.email === email) || 
         (id && u.id === id)
       ) ?? null;
+    },
+    updatePassword: async (id: number, passwordHash: string) => {
+      const data = readDb();
+      const idx = data.adminUsers.findIndex(u => u.id === id);
+      if (idx === -1) return null;
+      data.adminUsers[idx] = {
+        ...data.adminUsers[idx],
+        passwordHash,
+        updatedAt: new Date().toISOString(),
+      };
+      writeDb(data);
+      return data.adminUsers[idx];
     },
   },
 
@@ -803,6 +740,93 @@ export const db = {
     },
   },
 
+  // --- KATEGORI ---
+  category: {
+    findMany: async (type?: string) => {
+      const data = readDb();
+      let list = [...(data.categories || [])];
+      if (type) {
+        const normalizedType = type.toUpperCase();
+        list = list.filter(c => c.type.toUpperCase() === normalizedType);
+      }
+      return list.sort((a, b) => {
+        if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    },
+    findUnique: async (where: { id?: number; slug?: string }) => {
+      const data = readDb();
+      const categories = data.categories || [];
+      if (where.id !== undefined) return categories.find(c => c.id === where.id) ?? null;
+      if (where.slug) return categories.find(c => c.slug === where.slug) ?? null;
+      return null;
+    },
+    create: async (input: Omit<Category, 'id' | 'createdAt' | 'updatedAt'>) => {
+      const data = readDb();
+      if (!Array.isArray(data.categories)) data.categories = [];
+      const now = new Date().toISOString();
+      const newId = data.categories.length > 0 ? Math.max(...data.categories.map(c => c.id)) + 1 : 1;
+      const newCat: Category = {
+        ...input,
+        id: newId,
+        createdAt: now,
+        updatedAt: now,
+      };
+      data.categories.push(newCat);
+      writeDb(data);
+      return newCat;
+    },
+    update: async (id: number, input: Partial<Omit<Category, 'id' | 'createdAt'>>) => {
+      const data = readDb();
+      if (!Array.isArray(data.categories)) data.categories = [];
+      const idx = data.categories.findIndex(c => c.id === id);
+      if (idx === -1) throw new Error('Kategori tidak ditemukan');
+      data.categories[idx] = {
+        ...data.categories[idx],
+        ...input,
+        updatedAt: new Date().toISOString(),
+      };
+      writeDb(data);
+      return data.categories[idx];
+    },
+    delete: async (id: number) => {
+      const data = readDb();
+      if (!Array.isArray(data.categories)) data.categories = [];
+      const target = data.categories.find(c => c.id === id);
+      if (!target) throw new Error('Kategori tidak ditemukan');
+      data.categories = data.categories.filter(c => c.id !== id);
+      writeDb(data);
+      return target;
+    },
+  },
+
+  // --- PENGATURAN LANDING PAGE ---
+  siteSettings: {
+    get: async (): Promise<SiteSettings> => {
+      const data = readDb();
+      return mergeSiteSettings(data.siteSettings);
+    },
+    update: async (input: Partial<SiteSettings>): Promise<SiteSettings> => {
+      const data = readDb();
+      const current = mergeSiteSettings(data.siteSettings);
+      const updated = mergeSiteSettings({
+        ...current,
+        ...input,
+        popup: input.popup ? { ...current.popup, ...input.popup } : current.popup,
+        about: input.about ? { ...current.about, ...input.about } : current.about,
+        recruitment: input.recruitment
+          ? { ...current.recruitment, ...input.recruitment }
+          : current.recruitment,
+        contact: input.contact ? { ...current.contact, ...input.contact } : current.contact,
+        footer: input.footer ? { ...current.footer, ...input.footer } : current.footer,
+        updatedAt: new Date().toISOString(),
+      });
+      data.siteSettings = updated;
+      writeDb(data);
+      return updated;
+    },
+  },
+
   // --- STATS OVERVIEW ---
   getStats: async () => {
     const data = readDb();
@@ -814,8 +838,80 @@ export const db = {
       articles: data.articles.length,
       achievements: data.achievements.length,
       documents: data.documents.length,
+      categories: (data.categories || []).length,
     };
   },
+};
+
+type DbRepository = typeof jsonDb;
+
+const activeDb = (): DbRepository => (isFirestoreConfigured() ? firestoreDb : jsonDb);
+
+// Unified Database Repository (otomatis memilih Firestore jika env Firebase lengkap, atau fallback ke JSON lokal)
+export const db: DbRepository = {
+  adminUser: {
+    findFirst: (predicate) => activeDb().adminUser.findFirst(predicate),
+    findUnique: (where) => activeDb().adminUser.findUnique(where),
+    updatePassword: (id, passwordHash) => activeDb().adminUser.updatePassword(id, passwordHash),
+  },
+  banner: {
+    findMany: () => activeDb().banner.findMany(),
+    create: (input) => activeDb().banner.create(input),
+    update: (id, input) => activeDb().banner.update(id, input),
+    delete: (id) => activeDb().banner.delete(id),
+  },
+  bphMember: {
+    findMany: () => activeDb().bphMember.findMany(),
+    create: (input) => activeDb().bphMember.create(input),
+    update: (id, input) => activeDb().bphMember.update(id, input),
+    delete: (id) => activeDb().bphMember.delete(id),
+  },
+  division: {
+    findMany: () => activeDb().division.findMany(),
+    findBySlug: (slug) => activeDb().division.findBySlug(slug),
+    findById: (id) => activeDb().division.findById(id),
+    create: (input) => activeDb().division.create(input),
+    update: (id, input) => activeDb().division.update(id, input),
+    delete: (id) => activeDb().division.delete(id),
+    addMember: (divisionId, memberInput) => activeDb().division.addMember(divisionId, memberInput),
+    updateMember: (memberId, input) => activeDb().division.updateMember(memberId, input),
+    deleteMember: (memberId) => activeDb().division.deleteMember(memberId),
+  },
+  article: {
+    findMany: (status) => activeDb().article.findMany(status),
+    findBySlug: (slug) => activeDb().article.findBySlug(slug),
+    findById: (id) => activeDb().article.findById(id),
+    create: (input) => activeDb().article.create(input),
+    update: (id, input) => activeDb().article.update(id, input),
+    delete: (id) => activeDb().article.delete(id),
+  },
+  achievement: {
+    findMany: () => activeDb().achievement.findMany(),
+    create: (input) => activeDb().achievement.create(input),
+    update: (id, input) => activeDb().achievement.update(id, input),
+    delete: (id) => activeDb().achievement.delete(id),
+  },
+  document: {
+    findMany: () => activeDb().document.findMany(),
+    create: (input) => activeDb().document.create(input),
+    delete: (id) => activeDb().document.delete(id),
+  },
+  activityLog: {
+    findMany: (limit) => activeDb().activityLog.findMany(limit),
+    create: (input) => activeDb().activityLog.create(input),
+  },
+  category: {
+    findMany: (type) => activeDb().category.findMany(type),
+    findUnique: (where) => activeDb().category.findUnique(where),
+    create: (input) => activeDb().category.create(input),
+    update: (id, input) => activeDb().category.update(id, input),
+    delete: (id) => activeDb().category.delete(id),
+  },
+  siteSettings: {
+    get: () => activeDb().siteSettings.get(),
+    update: (input) => activeDb().siteSettings.update(input),
+  },
+  getStats: () => activeDb().getStats(),
 };
 
 export default db;
