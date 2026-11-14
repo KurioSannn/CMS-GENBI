@@ -1,4 +1,3 @@
-// tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -9,43 +8,44 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        serif: ['Newsreader', 'Playfair Display', 'Georgia', 'serif'],
+        display: ['"Plus Jakarta Sans"', 'sans-serif'],
       },
       colors: {
-        primary: {
-          blue: '#3b82f6', // Biru
-          white: '#FFFFFF', // Putih
+        brand: {
+          navy: '#0B1F40',
+          dark: '#061021',
+          sky: '#0284C7',
+          skyLight: '#38BDF8',
+          gold: '#F59E0B',
+          amber: '#D97706',
+          slate: '#F8FAFC',
         },
-        secondary: {
-          navy: '#1e3a8a', // Navy
-        },
-        background: '#f8fafc', // Warna latar belakang netral
-        text: {
-          primary: '#0f172a', // Teks utama (gelap)
-          secondary: '#64748b', // Teks sekunder (abu-abu)
-        }
-      },
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
       },
       animation: {
-        shine: 'shine 1.5s ease-in-out infinite',
+        'marquee': 'marquee 25s linear infinite',
+        'float-slow': 'float 6s ease-in-out infinite',
+        'shimmer-gold': 'shimmerGold 7s ease-in-out infinite',
       },
       keyframes: {
-        shine: {
-          '0%': { transform: 'translateX(-100%) skewX(-12deg)' },
-          '100%': { transform: 'translateX(200%) skewX(-12deg)' },
-        }
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        shimmerGold: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
       },
-      lineClamp: {
-        2: '2',
-        3: '3',
-      }
     },
   },
   plugins: [],
 };
-
 
 export default config;

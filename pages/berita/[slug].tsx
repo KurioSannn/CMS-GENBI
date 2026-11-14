@@ -16,7 +16,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const slug = params?.slug as string;
   const article = await db.article.findBySlug(slug);
 
-  if (!article) {
+  if (!article || article.status !== 'PUBLISHED') {
     return {
       notFound: true,
     };
@@ -24,7 +24,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   return {
     props: {
-      article,
+      article: JSON.parse(JSON.stringify(article)),
     },
   };
 };
@@ -47,15 +47,15 @@ export default function DetailBerita({ article }: DetailBeritaProps) {
         <meta property="og:url" content={pageUrl} />
       </Head>
 
-      <Navbar />
+      <Navbar isScrolled={true} />
 
       <main className="min-h-screen bg-slate-50 pt-28 pb-20">
         <article className="container mx-auto px-4 max-w-4xl">
           {/* Back link */}
           <div className="mb-6">
             <Link
-              href="/#genbi-news"
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#0B1F40] transition-colors"
+              href="/#berita"
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-[#0284C7] transition-colors"
             >
               <ArrowLeft size={16} /> Kembali ke Berita
             </Link>
