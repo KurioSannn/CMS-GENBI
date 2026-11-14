@@ -16,6 +16,7 @@ import {
   Loader2,
   SlidersHorizontal,
   Activity,
+  KeyRound,
 } from 'lucide-react';
 import { Toaster, toast } from 'sonner';
 
@@ -69,6 +70,7 @@ const navigationGroups: NavGroup[] = [
     group: 'SISTEM & AUDIT',
     items: [
       { href: '/admin/aktivitas', label: 'Log Aktivitas Admin', icon: Activity },
+      { href: '/admin/akun', label: 'Akun & Password', icon: KeyRound },
     ],
   },
 ];
