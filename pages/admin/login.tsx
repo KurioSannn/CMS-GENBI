@@ -42,12 +42,6 @@ export default function AdminLoginPage() {
     }
   };
 
-  const handleQuickFill = () => {
-    setUsername('admin');
-    setPassword('admin123');
-    toast.info('Akun admin default telah terisi');
-  };
-
   return (
     <>
       <Head>
@@ -210,20 +204,6 @@ export default function AdminLoginPage() {
                 </button>
               </div>
             </form>
-
-            {/* Quick Demo Fill Helper */}
-            <div className="pt-5 border-t border-slate-100 flex items-center justify-between gap-3 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
-              <div className="text-slate-600 text-xs">
-                Akun demo: <span className="font-bold text-slate-900">admin / admin123</span>
-              </div>
-              <button
-                type="button"
-                onClick={handleQuickFill}
-                className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-semibold text-xs transition-colors shadow-2xs"
-              >
-                Isi Otomatis
-              </button>
-            </div>
           </div>
 
           {/* Bottom Footer */}
